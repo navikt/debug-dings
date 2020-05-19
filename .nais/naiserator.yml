@@ -45,4 +45,4 @@ spec:
   cpuThresholdPercentage: 80
   envFrom:
     - secret: dingser-idporten
-  #     - dingser-tokendings
+    - secret: dingser-tokendings

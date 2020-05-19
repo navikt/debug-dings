@@ -19,8 +19,6 @@ data class AppConfiguration(
 fun main() = startServer()
 
 fun startServer() {
-    // val mockSever = MockOAuth2Server(config = OAuth2Config(interactiveLogin = true))
-    // mockSever.start(port = 8888)
     runBlocking {
         val applicationStatus = AppConfiguration().applicationStatus
         val environment = AppConfiguration().environment
