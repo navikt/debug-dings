@@ -83,7 +83,9 @@ object TokenDingsServiceSpek : Spek({
         context("Setup Stub to request Token from DIFI") {
             server.tokenDingsStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
             it("Should return and serialize Token") {
-                val result = runBlocking { tokenDingsService.bearerToken() }
+                val result = runBlocking {
+                    tokenDingsService.bearerToken(tokenDingsService.createJws())
+                }
                 result.substringAfter("Bearer").trim() `should be equal to` accessTokenResponse.accessToken
             }
         }

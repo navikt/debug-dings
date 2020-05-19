@@ -44,7 +44,7 @@ class TokenDingsService(
 
 ) {
 
-    private fun createJws(): Jws {
+    fun createJws(): Jws {
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
         val keys = getKeys(environment.tokenDings.jwksPublic).keys
         return SignedJWT(
@@ -79,8 +79,5 @@ class TokenDingsService(
             AccessToken(response.accessToken)
         }
 
-    suspend fun bearerToken(): String {
-        val jwsToken = createJws()
-        return "$BEARER ${getToken(jwsToken)}"
-    }
+    suspend fun bearerToken(jwsToken: Jws) = "$BEARER ${getToken(jwsToken)}"
 }

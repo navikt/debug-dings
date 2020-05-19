@@ -41,10 +41,9 @@ private fun Routing.authCallback(tokenConfiguration: TokenConfiguration, environ
         authenticate(identityServerName) {
             get("/oauth") {
                 val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
-
-                getNextApplicationResponse(tokenConfiguration, environment, principal)
-
                 call.respondText("Access Token = ${principal?.accessToken}")
+
+                // getNextApplicationResponse(tokenConfiguration, environment, principal)
             }
         }
     }
@@ -60,12 +59,13 @@ suspend fun getNextApplicationResponse(
         environment = environment
     )
     val handlerUtils = HandlerUtils()
+    val jwsToken = tokenDingsService.createJws()
+    val accessToken = tokenDingsService.bearerToken(jwsToken)
 
     val nextApp = "http://dings-validate/api/v1/token"
     handlerUtils.tryRequest("Getting response from: ", nextApp) {
         handlerUtils.defaultHttpClient.get<OauthServerConfigurationMetadata> {
-            header(HttpHeaders.Authorization, tokenDingsService.bearerToken()
-            )
+            header(HttpHeaders.Authorization, accessToken)
             url(nextApp)
         }
     }
