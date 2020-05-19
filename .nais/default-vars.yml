@@ -1,0 +1,10 @@
+namespace: plattformsikkerhet
+team: plattformsikkerhet
+ingresses:
+  - https://dingser.dev-gcp.nais.io
+envs:
+  - name: APPLICATION_PROFILE
+    value: NON_PROD
+replicas:
+  min: 1
+  max: 1

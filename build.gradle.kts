@@ -1,0 +1,111 @@
+
+
+group = "no.nav"
+version = "0.0.1"
+
+// Common
+val kotlinVersion = "1.3.72"
+val ktorVersion = "1.3.2"
+val kotlinxVersion = "1.3.6"
+val jacksonVersion = "2.11.0"
+val konfigVersion = "1.6.10.0"
+
+// Oauth2
+val nimbusJoseVersion = "8.3"
+
+// Log
+val apacheCommonsVersion = "3.10"
+val logstashEncoderVersion = "6.3"
+val logbackVersion = "1.2.3"
+val ioPrometheusVersion = "0.9.0"
+val kotlinloggingVersion = "1.7.9"
+
+// Test
+val spekVersion = "1.2.1"
+val kluentVersion = "1.61"
+val wiremockVersion = "2.26.3"
+val platformRunner = "1.5.1"
+
+val mainClassName = "no.nav.dingser.DingserKt"
+
+plugins {
+    kotlin("jvm") version "1.3.72"
+    java
+    id("org.jmailen.kotlinter") version "2.3.2"
+    id("com.github.ben-manes.versions") version "0.28.0"
+    id("com.github.johnrengelman.shadow") version "5.2.0"
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven(url = "https://dl.bintray.com/kotlin/ktor")
+    maven(url = "https://kotlin.bintray.com/kotlinx")
+    maven(url = "http://packages.confluent.io/maven/")
+}
+
+tasks {
+    withType<Jar> {
+        manifest.attributes["Main-Class"] = mainClassName
+    }
+    create("printVersion") {
+        println(project.version)
+    }
+    withType<Test> {
+        useJUnitPlatform {
+            includeEngines("spek")
+        }
+        testLogging.events("passed", "skipped", "failed")
+    }
+}
+
+dependencies {
+    implementation (kotlin("stdlib"))
+    implementation ("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
+    implementation ("io.ktor:ktor-client-okhttp:$ktorVersion")
+
+    implementation ("io.ktor:ktor-client-okhttp:$ktorVersion")
+
+    implementation("io.ktor:ktor-auth:$ktorVersion")
+
+    implementation ("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation ("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation ("io.ktor:ktor-jackson:$ktorVersion")
+    implementation ("io.ktor:ktor-client-core:$ktorVersion")
+    implementation ("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation ("io.ktor:ktor-client-jackson:$ktorVersion")
+
+    implementation ("com.natpryce:konfig:$konfigVersion")
+
+    implementation ("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation ("org.apache.commons:commons-lang3:$apacheCommonsVersion")
+
+    // Bruk Nimbus
+    implementation ("com.nimbusds:nimbus-jose-jwt:$nimbusJoseVersion")
+    implementation("com.nimbusds:oauth2-oidc-sdk:${nimbusJoseVersion}")
+
+    implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+    implementation ("ch.qos.logback:logback-classic:$logbackVersion")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
+
+    implementation ("io.prometheus:simpleclient_hotspot:$ioPrometheusVersion")
+    implementation ("io.prometheus:simpleclient_common:$ioPrometheusVersion")
+    implementation ("io.github.microutils:kotlin-logging:$kotlinloggingVersion")
+
+    testImplementation("org.jetbrains.spek:spek-api:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testImplementation("org.jetbrains.spek:spek-data-driven-extension:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testRuntime("org.jetbrains.spek:spek-junit-platform-engine:$spekVersion") {
+        exclude(group = "org.junit.platform")
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
+        exclude(group = "org.eclipse.jetty")
+    }
+    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
+    testImplementation("org.junit.platform:junit-platform-runner:$platformRunner")
+    testImplementation ("com.github.tomakehurst:wiremock:$wiremockVersion")
+}

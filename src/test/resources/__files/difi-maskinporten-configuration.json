@@ -1,0 +1,11 @@
+{
+  "issuer": "https://ver2.maskinporten.no/",
+  "token_endpoint": "https://maskinporten.no/token",
+  "jwks_uri": "http://localhost:8888/jwk",
+  "token_endpoint_auth_methods_supported": [
+    "private_key_jwt"
+  ],
+  "grant_types_supported": [
+    "urn:ietf:params:oauth:grant-type:jwt-bearer"
+  ]
+}
