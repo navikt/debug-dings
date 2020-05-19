@@ -72,6 +72,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
         authorizeUrlInterceptor = { this.parameters.append("response_mode", "query") }
     )
 
+    log.info { "Installing Authentication Server Name: $identityServerName" }
     install(Authentication) {
         oauth(identityServerName) {
             // will handle the back channel requests to the token endpoint
@@ -83,18 +84,17 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
         }
     }
 
-    install(DefaultHeaders) {
-    }
-    log.info { "Installing log level: INFO" }
+    val logLevel = Level.INFO
+    log.info { "Installing log level: $logLevel" }
     install(CallLogging) {
-        level = Level.INFO
+        level = logLevel
         filter { call -> call.request.path().startsWith("/") }
     }
     log.info { "Installing Api-Exception handler" }
     install(StatusPages) {
         exceptionHandler()
     }
-
+    log.info { "Installing ObjectMapper" }
     install(ContentNegotiation) {
         jackson {
             configure(SerializationFeature.INDENT_OUTPUT, true)
@@ -102,9 +102,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     }
     log.info { "Installing routes" }
     install(Routing) {
-
         selfTest(readySelfTestCheck = { applicationStatus.initialized }, aLiveSelfTestCheck = { applicationStatus.running })
-
         idporten(tokenDingsConfiguration, environment)
     }
     applicationStatus.initialized = true
