@@ -43,6 +43,8 @@ fun createHttpServer(environment: Environment, applicationStatus: ApplicationSta
 @KtorExperimentalAPI
 fun Application.setupHttpServer(environment: Environment, applicationStatus: ApplicationStatus) {
 
+    log.info { "Application Profile running: ${environment.application.profile}" }
+
     val difiConfiguration = TokenConfiguration(
         wellknownUrl = environment.idporten.metadata
     )
@@ -55,9 +57,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
         wellknownUrl = environment.tokenDings.metadata
     )
 
-    // val endUserService = EndUserService()
     log.info { "Setup Authentication with Idp: ${difiConfiguration.wellKnownMetadata.issuer}" }
-    log.info { "Client: ${environment.idporten.clientId}" }
     val clientSettings = OAuthServerSettings.OAuth2ServerSettings(
         name = identityServerName,
         authorizeUrl = difiConfiguration.wellKnownMetadata.authorizationEndpoint, // OAuth authorization endpoint
@@ -80,8 +80,8 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
             // client settings from before
             providerLookup = { clientSettings }
             // Where we receive the Authorization code
-            urlProvider = when (Profile.TEST.name) {
-                environment.application.profile -> {
+            urlProvider = when (environment.application.profile) {
+                Profile.TEST.name -> {
                     { "http://localhost:8080/oauth" }
                 }
                 else -> {
