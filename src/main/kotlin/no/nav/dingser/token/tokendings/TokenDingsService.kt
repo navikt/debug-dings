@@ -38,7 +38,7 @@ internal const val CLIENT_ASSERTION_TYPE = "urn:ietf:params:oauth:client-asserti
 
 class TokenDingsService(
     private val environment: Environment,
-    private val subjectToken: String,
+    private val subjectToken: String?,
     val tokenConfiguration: TokenConfiguration,
     private val handlerUtils: HandlerUtils = HandlerUtils()
 
@@ -51,7 +51,7 @@ class TokenDingsService(
             JWSHeader.Builder(JWSAlgorithm.RS256).keyID(keys.map { it.kid }.single()).build(),
             JWTClaimsSet.Builder()
                 .audience(tokenConfiguration.wellKnownMetadata.tokenEndpoint)
-                .issuer(environment.tokenDings.iss)
+                .issuer(environment.tokenDings.issuer)
                 .issueTime(Date(Clock.systemUTC().millis()))
                 .jwtID(UUID.randomUUID().toString())
                 .expirationTime(Date(Clock.systemUTC().millis() + 120000))
@@ -70,7 +70,7 @@ class TokenDingsService(
                     PARAMS_CLIENT_ASSERTION to listOf(jwsToken.token),
                     PARAMS_CLIENT_ASSERTION_TYPE to listOf(CLIENT_ASSERTION_TYPE),
                     PARAMS_GRANT_TYPE to listOf(GRANT_TYPE),
-                    PARAMS_SUBJECT_TOKEN to listOf(subjectToken),
+                    PARAMS_SUBJECT_TOKEN to listOf(subjectToken!!),
                     PARAMS_SUBJECT_TOKEN_TYPE to listOf(SUBJECT_TOKEN_TYPE),
                     PARAMS_AUDIENCE to listOf(environment.tokenDings.audience))
             ) {

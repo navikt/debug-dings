@@ -70,8 +70,8 @@ object TokenDingsServiceSpek : Spek({
     server.idportenStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
 
     // Setup Test Classes, They are alike - using same issuer, in test, but nice to separate them for reading
-    val tokenConfigMaskinporten = TokenConfiguration(environment.idporten.issuer, OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN)
-    val tokenConfigTokenDings = TokenConfiguration(environment.tokenDings.issuer, OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS)
+    val tokenConfigMaskinporten = TokenConfiguration(environment.idporten.metadata)
+    val tokenConfigTokenDings = TokenConfiguration(environment.tokenDings.metadata)
 
     val tokenDingsService = TokenDingsService(
         environment = environment,

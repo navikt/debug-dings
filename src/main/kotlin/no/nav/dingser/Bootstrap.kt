@@ -44,13 +44,15 @@ fun createHttpServer(environment: Environment, applicationStatus: ApplicationSta
 fun Application.setupHttpServer(environment: Environment, applicationStatus: ApplicationStatus) {
 
     val difiConfiguration = TokenConfiguration(
-        issuer = environment.idporten.issuer,
-        path = OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN
+        wellknownUrl = environment.idporten.metadata
     )
 
+    // val difiConfiguration = TokenConfiguration(
+    //     issuer = "http://localhost:8888/youssef/.well-known/openid-configuration",
+    // )
+
     val tokenDingsConfiguration = TokenConfiguration(
-        issuer = environment.tokenDings.issuer,
-        path = OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS
+        wellknownUrl = environment.tokenDings.metadata
     )
 
     // val endUserService = EndUserService()

@@ -10,22 +10,20 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 
 internal const val SCOPE = "scope"
-internal const val RESOURCE = "resource"
 internal const val BEARER = "Bearer"
 
 private val log = KotlinLogging.logger { }
 
 class TokenConfiguration(
-    issuer: String,
-    path: String
+    wellknownUrl: String
 ) {
 
     private val handlerUtils = HandlerUtils()
 
     val wellKnownMetadata: OauthServerConfigurationMetadata = runBlocking {
-        handlerUtils.tryRequest("Getting WellKnown configuration from: ", "$issuer$path") {
+        handlerUtils.tryRequest("Getting WellKnown configuration from: ", wellknownUrl) {
             handlerUtils.defaultHttpClient.get<OauthServerConfigurationMetadata> {
-                url("$issuer$path")
+                url(wellknownUrl)
                 accept(ContentType.Application.Json)
             }.also { log.info { "Got WellKnown config from: $it" } }
         }

@@ -66,6 +66,8 @@ dependencies {
 
     implementation ("io.ktor:ktor-client-okhttp:$ktorVersion")
 
+    implementation ("no.nav.security:mock-oauth2-server:0.1.33")
+
     implementation("io.ktor:ktor-auth:$ktorVersion")
 
     implementation ("io.ktor:ktor-client-cio:$ktorVersion")

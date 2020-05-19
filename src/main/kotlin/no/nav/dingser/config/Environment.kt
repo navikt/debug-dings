@@ -23,15 +23,15 @@ data class Environment(
     )
 
     data class Idporten(
-        val issuer: String = config.getOrElse(Key("idporten.issuer", stringType), "https://oidc-ver2.difi.no/idporten-oidc-provider"),
+        val metadata: String = config.getOrElse(Key("idporten.wellknown", stringType), "https://oidc-ver2.difi.no/idporten-oidc-provider/.well-known/openid-configuration"),
         val scope: String = config.getOrElse(Key("idporten.scope", stringType), "openid"),
         val clientId: String = config.getOrElse(Key("idporten.client.id", stringType), "client_id"),
         val clientSecret: String = config.getOrElse(Key("idporten.client.secret", stringType), "client_secret")
     )
 
     data class TokenDings(
-        val issuer: String = config.getOrElse(Key("tokendings.issuer", stringType), "https://tokendings.dev-gcp.nais.io"),
-        val iss: String = config.getOrElse(Key("tokendings.sub", stringType), "dev-gcp:plattformsikkerhet:dingser"),
+        val metadata: String = config.getOrElse(Key("tokendings.wellknown", stringType), "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"),
+        val issuer: String = config.getOrElse(Key("tokendings.sub", stringType), "dev-gcp:plattformsikkerhet:dingser"),
         val audience: String = config.getOrElse(Key("tokendings.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
 
         val clientId: String = config.getOrElse(Key("tokendings.client.id", stringType), "client_id"),
