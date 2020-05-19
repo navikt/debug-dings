@@ -19,7 +19,6 @@ import no.nav.dingser.token.utils.AccessTokenResponse
 import no.nav.dingser.token.utils.BEARER
 import no.nav.dingser.token.utils.HandlerUtils
 import no.nav.dingser.token.utils.Jws
-import no.nav.dingser.token.utils.SCOPE
 import no.nav.dingser.token.utils.TokenConfiguration
 import no.nav.dingser.token.utils.base64ToPrivateKey
 import no.nav.dingser.token.utils.getKeys
@@ -51,11 +50,11 @@ class TokenDingsService(
             JWSHeader.Builder(JWSAlgorithm.RS256).keyID(keys.map { it.kid }.single()).build(),
             JWTClaimsSet.Builder()
                 .audience(tokenConfiguration.wellKnownMetadata.tokenEndpoint)
+                .subject(environment.tokenDings.issuer)
                 .issuer(environment.tokenDings.issuer)
                 .issueTime(Date(Clock.systemUTC().millis()))
                 .jwtID(UUID.randomUUID().toString())
                 .expirationTime(Date(Clock.systemUTC().millis() + 120000))
-                .subject(environment.tokenDings.issuer)
                 .build()
         ).run {
             sign(RSASSASigner(base64ToPrivateKey(environment.tokenDings.privateKeyBase64) as PrivateKey))

@@ -19,7 +19,8 @@ data class Environment(
 ) {
     data class Application(
         val profile: String = config.getOrElse(Key("application.profile", stringType), "TEST"),
-        val appPort: Int = config.getOrElse(Key("application.port", intType), 8080)
+        val port: Int = config.getOrElse(Key("application.port", intType), 8080),
+        val redirectUrl: String = config.getOrElse(Key("application.redirect.url", stringType), "http://localhost:8080/oauth")
     )
 
     data class Idporten(

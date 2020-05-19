@@ -28,16 +28,13 @@ import no.nav.dingser.config.Profile
 import no.nav.dingser.token.utils.TokenConfiguration
 import org.slf4j.event.Level
 
-const val OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN = "/.well-known/openid-configuration"
-const val OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS = "/.well-known/oauth-authorization-server"
-
 const val identityServerName = "IdentityServerTest"
 
 private val log = KotlinLogging.logger { }
 
 @KtorExperimentalAPI
 fun createHttpServer(environment: Environment, applicationStatus: ApplicationStatus): NettyApplicationEngine {
-    return embeddedServer(Netty, port = environment.application.appPort, module = { setupHttpServer(environment = environment, applicationStatus = applicationStatus) })
+    return embeddedServer(Netty, port = environment.application.port, module = { setupHttpServer(environment = environment, applicationStatus = applicationStatus) })
 }
 
 @KtorExperimentalAPI
@@ -49,27 +46,13 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
         wellknownUrl = environment.idporten.metadata
     )
 
-    // val difiConfiguration = TokenConfiguration(
-    //     issuer = "http://localhost:8888/youssef/.well-known/openid-configuration",
-    // )
-
     val tokenDingsConfiguration = TokenConfiguration(
         wellknownUrl = environment.tokenDings.metadata
     )
 
     log.info { "Setup Authentication with Idp: ${difiConfiguration.wellKnownMetadata.issuer}" }
-    val clientSettings = OAuthServerSettings.OAuth2ServerSettings(
-        name = identityServerName,
-        authorizeUrl = difiConfiguration.wellKnownMetadata.authorizationEndpoint, // OAuth authorization endpoint
-        accessTokenUrl = difiConfiguration.wellKnownMetadata.tokenEndpoint, // OAuth token endpoint
-        clientId = environment.idporten.clientId,
-        clientSecret = environment.idporten.clientSecret,
-        // basic auth implementation is not "OAuth style" so falling back to post body
-        accessTokenRequiresBasicAuth = false,
-        requestMethod = HttpMethod.Post, // must POST to token endpoint
-        defaultScopes = listOf(environment.idporten.scope), // what scopes to explicitly request
-        // customise the authorization request with extra parameters
-        authorizeUrlInterceptor = { this.parameters.append("response_mode", "query") }
+    val clientSettings = getOauthServerSettings(
+        environment = environment, configuration = difiConfiguration
     )
 
     log.info { "Installing Authentication Server Name: $identityServerName" }
@@ -80,14 +63,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
             // client settings from before
             providerLookup = { clientSettings }
             // Where we receive the Authorization code
-            urlProvider = when (environment.application.profile) {
-                Profile.TEST.name -> {
-                    { "http://localhost:8080/oauth" }
-                }
-                else -> {
-                    { "https://dingser.dev-gcp.nais.io/oauth" }
-                }
-            }
+            urlProvider = { environment.application.redirectUrl }
         }
     }
 
@@ -115,3 +91,20 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     applicationStatus.initialized = true
     log.info { "Application is up and running" }
 }
+
+fun getOauthServerSettings(
+    environment: Environment,
+    configuration: TokenConfiguration
+) = OAuthServerSettings.OAuth2ServerSettings(
+    name = identityServerName,
+    authorizeUrl = configuration.wellKnownMetadata.authorizationEndpoint, // OAuth authorization endpoint
+    accessTokenUrl = configuration.wellKnownMetadata.tokenEndpoint, // OAuth token endpoint
+    clientId = environment.idporten.clientId,
+    clientSecret = environment.idporten.clientSecret,
+    // basic auth implementation is not "OAuth style" so falling back to post body
+    accessTokenRequiresBasicAuth = false,
+    requestMethod = HttpMethod.Post, // must POST to token endpoint
+    defaultScopes = listOf(environment.idporten.scope), // what scopes to explicitly request
+    // customise the authorization request with extra parameters
+    authorizeUrlInterceptor = { this.parameters.append("response_mode", "query") }
+)

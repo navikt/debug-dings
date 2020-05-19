@@ -19,6 +19,8 @@ import no.nav.dingser.config.APPLICATION_JSON
 import no.nav.dingser.token.utils.objectMapper
 
 internal const val TOKEN_PATH = "/token"
+const val OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN = "/.well-known/openid-configuration"
+const val OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS = "/.well-known/oauth-authorization-server"
 
 fun WireMockServer.idportenStub(status: HttpStatusCode, body: String): StubMapping =
     stubFor(
@@ -76,3 +78,12 @@ internal fun generateRsaKey(keyId: String = UUID.randomUUID().toString(), keySiz
                 .build()
         }, privateKey)
 }
+
+// Mock Wellknown
+fun configurationServerMokk(serverPort: Int) = ConfigurationServerMokk(
+    issuer = "http://localhost:$serverPort/",
+    token_endpoint = "http://localhost:$serverPort/token",
+    jwks_uri = "http://localhost:$serverPort/jwk",
+    token_endpoint_auth_methods_supported = listOf("private_key_jwt"),
+    grant_types_supported = listOf("urn:ietf:params:oauth:grant-type:jwt-bearer")
+)

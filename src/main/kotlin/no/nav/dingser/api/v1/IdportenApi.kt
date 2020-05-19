@@ -4,11 +4,7 @@ import io.ktor.application.call
 import io.ktor.auth.OAuthAccessTokenResponse
 import io.ktor.auth.authenticate
 import io.ktor.auth.authentication
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.url
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
@@ -18,7 +14,6 @@ import no.nav.dingser.config.Environment
 import no.nav.dingser.identityServerName
 import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.utils.HandlerUtils
-import no.nav.dingser.token.utils.OauthServerConfigurationMetadata
 import no.nav.dingser.token.utils.TokenConfiguration
 
 private val log = KotlinLogging.logger { }
@@ -66,11 +61,11 @@ suspend fun getNextApplicationResponse(
     val accessToken = tokenDingsService.bearerToken(jwsToken)
     log.info { "accessToken: $accessToken" }
 
-   // val nextApp = "http://dings-validate/api/v1/token"
-   // handlerUtils.tryRequest("Getting response from: ", nextApp) {
-   //     handlerUtils.defaultHttpClient.get<OauthServerConfigurationMetadata> {
-   //         header(HttpHeaders.Authorization, accessToken)
-   //         url(nextApp)
-   //     }
-   // }
+    // val nextApp = "http://dings-validate/api/v1/token"
+    // handlerUtils.tryRequest("Getting response from: ", nextApp) {
+    //     handlerUtils.defaultHttpClient.get<OauthServerConfigurationMetadata> {
+    //         header(HttpHeaders.Authorization, accessToken)
+    //         url(nextApp)
+    //     }
+    // }
 }

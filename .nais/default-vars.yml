@@ -5,6 +5,8 @@ ingresses:
 env:
   - name: APPLICATION_PROFILE
     value: NON_PROD
+  - name: APPLICATION_REDIRECT_URL
+    value: "https://dingser.dev-gcp.nais.io/oauth"
 replicas:
   min: 1
   max: 1

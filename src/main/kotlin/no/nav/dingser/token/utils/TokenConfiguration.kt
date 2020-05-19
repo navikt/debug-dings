@@ -9,7 +9,6 @@ import io.ktor.http.ContentType
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 
-internal const val SCOPE = "scope"
 internal const val BEARER = "Bearer"
 
 private val log = KotlinLogging.logger { }
@@ -35,7 +34,7 @@ data class OauthServerConfigurationMetadata(
     @JsonProperty(value = "issuer", required = true) val issuer: String,
     @JsonProperty(value = "token_endpoint", required = true) val tokenEndpoint: String,
     @JsonProperty(value = "jwks_uri", required = true) val jwksUri: String,
-    @JsonProperty(value = "authorization_endpoint", required = true) val authorizationEndpoint: String
+    @JsonProperty(value = "authorization_endpoint", required = false) var authorizationEndpoint: String = ""
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

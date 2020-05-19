@@ -10,7 +10,9 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dingser.config.Environment
 import no.nav.dingser.config.encodeBase64
 import no.nav.dingser.models.Keys
-import no.nav.dingser.mokk.ConfigurationServerMokk
+import no.nav.dingser.mokk.OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN
+import no.nav.dingser.mokk.OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS
+import no.nav.dingser.mokk.configurationServerMokk
 import no.nav.dingser.mokk.generateRsaKey
 import no.nav.dingser.mokk.idportenStub
 import no.nav.dingser.mokk.tokenDingsStub
@@ -33,13 +35,7 @@ object TokenDingsServiceSpek : Spek({
     ).also { it.start() }
 
     // Mock Wellknown
-    val configurationServerMokk = ConfigurationServerMokk(
-        issuer = "http://localhost:${server.port()}/",
-        token_endpoint = "http://localhost:${server.port()}/token",
-        jwks_uri = "http://localhost:${server.port()}/jwk",
-        token_endpoint_auth_methods_supported = listOf("private_key_jwt"),
-        grant_types_supported = listOf("urn:ietf:params:oauth:grant-type:jwt-bearer")
-    )
+    val configurationServerMokk = configurationServerMokk(server.port())
 
     val rsaKey = generateRsaKey()
 
