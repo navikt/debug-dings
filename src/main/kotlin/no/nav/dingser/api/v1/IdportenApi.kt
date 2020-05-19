@@ -42,7 +42,6 @@ private fun Routing.authCallback(tokenConfiguration: TokenConfiguration, environ
             get("/oauth") {
                 val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
 
-
                 getNextApplicationResponse(tokenConfiguration, environment, principal)
 
                 call.respondText("Access Token = ${principal?.accessToken}")

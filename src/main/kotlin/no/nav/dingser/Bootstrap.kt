@@ -24,6 +24,7 @@ import no.nav.dingser.api.v1.exceptionHandler
 import no.nav.dingser.api.v1.idporten
 import no.nav.dingser.api.v1.selfTest
 import no.nav.dingser.config.Environment
+import no.nav.dingser.config.Profile
 import no.nav.dingser.token.utils.TokenConfiguration
 import org.slf4j.event.Level
 
@@ -79,7 +80,14 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
             // client settings from before
             providerLookup = { clientSettings }
             // Where we receive the Authorization code
-            urlProvider = { "http://localhost:8080/oauth" }
+            urlProvider = when (Profile.TEST.name) {
+                environment.application.profile -> {
+                    { "http://localhost:8080/oauth" }
+                }
+                else -> {
+                    { "https://dingser.dev-gcp.nais.io/oauth" }
+                }
+            }
         }
     }
 
