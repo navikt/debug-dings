@@ -2,7 +2,7 @@ namespace: plattformsikkerhet
 team: plattformsikkerhet
 ingresses:
   - https://dingser.dev-gcp.nais.io
-envs:
+env:
   - name: APPLICATION_PROFILE
     value: NON_PROD
 replicas:

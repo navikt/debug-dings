@@ -44,5 +44,3 @@ data class Environment(
 enum class Profile {
     TEST, NON_PROD, PROD
 }
-
-internal fun profileIs(profile: String) = System.getenv("APPLICATION_PROFILE") == profile
