@@ -55,7 +55,7 @@ class TokenDingsService(
                 .issueTime(Date(Clock.systemUTC().millis()))
                 .jwtID(UUID.randomUUID().toString())
                 .expirationTime(Date(Clock.systemUTC().millis() + 120000))
-                .claim(SCOPE, environment.idporten.scope)
+                .subject(environment.tokenDings.issuer)
                 .build()
         ).run {
             sign(RSASSASigner(base64ToPrivateKey(environment.tokenDings.privateKeyBase64) as PrivateKey))
