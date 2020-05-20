@@ -4,7 +4,7 @@ import com.nimbusds.jose.JOSEObjectType
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.RSASSASigner
-import com.nimbusds.jose.jwk.JWK
+import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
@@ -42,6 +42,8 @@ class TokenDingsService(
 
 ) {
 
+    private val jwkToRSA = JWKSet.parse(environment.tokenDings.jwksPrivate).keys[0].toRSAKey()
+
     fun createJws(): Jws {
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
         return Jws(
@@ -53,7 +55,7 @@ class TokenDingsService(
                 .jwtID(UUID.randomUUID().toString())
                 .expirationTime(Date(Clock.systemUTC().millis() + 120000))
                 .build()
-                .sign(JWK.parse(environment.tokenDings.jwksPrivate).toRSAKey())
+                .sign(jwkToRSA)
                 .serialize()
         )
     }

@@ -35,10 +35,10 @@ data class Environment(
         val issuer: String = config.getOrElse(Key("tokendings.sub", stringType), "dev-gcp:plattformsikkerhet:dingser"),
         val audience: String = config.getOrElse(Key("tokendings.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
 
-        val clientId: String = config.getOrElse(Key("tokendings.client.id", stringType), "client_id"),
-        val jwksPublic: String = config.getOrElse(Key("tokendings.jwks.public", stringType), "jwks_public"),
-        val jwksPrivate: String = config.getOrElse(Key("tokendings.jwks.private", stringType), "jwks_private"),
-        val privateKeyBase64: String = config.getOrElse(Key("tokendings.private.key.base64", stringType), "RSA_PRIVATE_KEY")
+        // val clientId: String = config.getOrElse(Key("tokendings.client.id", stringType), "client_id"),
+        // val jwksPublic: String = config.getOrElse(Key("tokendings.jwks.public", stringType), "jwks_public"),
+        val jwksPrivate: String = config.getOrElse(Key("tokendings.jwks.private", stringType), "jwks_private")
+        // val privateKeyBase64: String = config.getOrElse(Key("tokendings.private.key.base64", stringType), "RSA_PRIVATE_KEY")
     )
 }
 

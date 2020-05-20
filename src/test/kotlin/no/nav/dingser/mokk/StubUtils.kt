@@ -4,12 +4,14 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.KeyUse
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.withCharset
+import net.minidev.json.JSONObject
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.interfaces.RSAPrivateKey
@@ -87,3 +89,5 @@ fun configurationServerMokk(serverPort: Int) = ConfigurationServerMokk(
     token_endpoint_auth_methods_supported = listOf("private_key_jwt"),
     grant_types_supported = listOf("urn:ietf:params:oauth:grant-type:jwt-bearer")
 )
+
+internal fun toJWKSet(rsaKey: RSAKey, isPublic: Boolean): JSONObject? = JWKSet(rsaKey).toJSONObject(isPublic)
