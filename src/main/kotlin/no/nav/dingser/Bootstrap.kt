@@ -24,7 +24,6 @@ import no.nav.dingser.api.v1.exceptionHandler
 import no.nav.dingser.api.v1.idporten
 import no.nav.dingser.api.v1.selfTest
 import no.nav.dingser.config.Environment
-import no.nav.dingser.config.Profile
 import no.nav.dingser.token.utils.TokenConfiguration
 import org.slf4j.event.Level
 

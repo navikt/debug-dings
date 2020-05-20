@@ -4,8 +4,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.nimbusds.jwt.SignedJWT
 import io.ktor.http.HttpStatusCode
-import java.util.Base64
 import kotlinx.coroutines.runBlocking
 import no.nav.dingser.config.Environment
 import no.nav.dingser.config.encodeBase64
@@ -22,10 +22,14 @@ import no.nav.dingser.token.utils.AccessTokenResponse
 import no.nav.dingser.token.utils.TokenConfiguration
 import no.nav.dingser.token.utils.objectMapper
 import org.amshove.kluent.`should be equal to`
+import org.amshove.kluent.shouldBeEqualTo
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.context
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
+import java.text.ParseException
+import java.util.*
+import kotlin.test.fail
 
 object TokenDingsServiceSpek : Spek({
 
@@ -41,14 +45,21 @@ object TokenDingsServiceSpek : Spek({
 
     // Setup environment for testing
     val environment = Environment(
+        application = Environment.Application(
+            profile = "TEST"
+        ),
+        idporten = Environment.Idporten(
+            "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
+        ),
         tokenDings = Environment.TokenDings(
-            issuer = "http://localhost:${server.port()}",
+            issuer = "cluster:namespace:app1",
+            audience = "cluster:namespace:app2",
+            metadata = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
             clientId = "1010",
             jwksPublic = objectMapper.writeValueAsString(
                 Keys(listOf(objectMapper.readValue(rsaKey.first.toPublicJWK().toJSONString())))),
-            // jwksPrivate =
+            jwksPrivate = rsaKey.first.toString(),
             privateKeyBase64 = Base64.getEncoder().encodeToString(rsaKey.second!!.encoded)
-
         )
     )
 
@@ -66,7 +77,6 @@ object TokenDingsServiceSpek : Spek({
     server.idportenStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
 
     // Setup Test Classes, They are alike - using same issuer, in test, but nice to separate them for reading
-    val tokenConfigMaskinporten = TokenConfiguration(environment.idporten.metadata)
     val tokenConfigTokenDings = TokenConfiguration(environment.tokenDings.metadata)
 
     val tokenDingsService = TokenDingsService(
@@ -78,11 +88,32 @@ object TokenDingsServiceSpek : Spek({
     describe("DIFI SERVICE, GET WellKnown Configuration and acquire Token") {
         context("Setup Stub to request Token from DIFI") {
             server.tokenDingsStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
-            it("Should return and serialize Token") {
-                val result = runBlocking {
-                    tokenDingsService.bearerToken(tokenDingsService.createJws())
+            val jws = tokenDingsService.createJws()
+
+            it("validate Created token") {
+                try {
+                    SignedJWT.parse(jws.token)
+                } catch (e: ParseException) {
+                    fail("Could not parse token")
                 }
-                result.substringAfter("Bearer").trim() `should be equal to` accessTokenResponse.accessToken
+                val parsedToken = SignedJWT.parse(jws.token)
+                val body = parsedToken.jwtClaimsSet
+                val header = parsedToken.header
+
+                header.algorithm.name shouldBeEqualTo rsaKey.first.algorithm.name
+                header.keyID shouldBeEqualTo rsaKey.first.keyID
+                body.audience[0] shouldBeEqualTo tokenConfigTokenDings.wellKnownMetadata.tokenEndpoint
+                body.subject shouldBeEqualTo environment.tokenDings.issuer
+                body.issuer shouldBeEqualTo environment.tokenDings.issuer
+                body.expirationTime.after(Date()) shouldBeEqualTo true
+            }
+
+            it("Should return and serialize Token") {
+                val tokenExchanged = runBlocking {
+                    tokenDingsService.getToken(jws)
+                }
+                val bearerToken = tokenDingsService.bearerToken(tokenExchanged)
+                bearerToken.substringAfter("Bearer").trim() `should be equal to` accessTokenResponse.accessToken
             }
         }
     }

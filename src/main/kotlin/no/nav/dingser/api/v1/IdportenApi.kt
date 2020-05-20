@@ -58,7 +58,8 @@ suspend fun getNextApplicationResponse(
     // Try to get token from token dings.
     val handlerUtils = HandlerUtils()
     val jwsToken = tokenDingsService.createJws()
-    val accessToken = tokenDingsService.bearerToken(jwsToken)
+    val tokenExchanged = tokenDingsService.getToken(jwsToken)
+    val accessToken = tokenDingsService.bearerToken(tokenExchanged)
     log.info { "accessToken: $accessToken" }
 
     // val nextApp = "http://dings-validate/api/v1/token"

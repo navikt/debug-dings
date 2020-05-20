@@ -1,17 +1,16 @@
 package no.nav.dingser.token.tokendings
 
+import com.nimbusds.jose.JOSEObjectType
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.RSASSASigner
+import com.nimbusds.jose.jwk.JWK
+import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.url
 import io.ktor.http.parametersOf
-import java.security.PrivateKey
-import java.time.Clock
-import java.util.Date
-import java.util.UUID
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
 import no.nav.dingser.token.utils.AccessToken
@@ -20,8 +19,8 @@ import no.nav.dingser.token.utils.BEARER
 import no.nav.dingser.token.utils.HandlerUtils
 import no.nav.dingser.token.utils.Jws
 import no.nav.dingser.token.utils.TokenConfiguration
-import no.nav.dingser.token.utils.base64ToPrivateKey
-import no.nav.dingser.token.utils.getKeys
+import java.time.Clock
+import java.util.*
 
 private val log = KotlinLogging.logger { }
 
@@ -45,9 +44,7 @@ class TokenDingsService(
 
     fun createJws(): Jws {
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
-        val keys = getKeys(environment.tokenDings.jwksPublic).keys
-        return SignedJWT(
-            JWSHeader.Builder(JWSAlgorithm.RS256).keyID(keys.map { it.kid }.single()).build(),
+        return Jws(
             JWTClaimsSet.Builder()
                 .audience(tokenConfiguration.wellKnownMetadata.tokenEndpoint)
                 .subject(environment.tokenDings.issuer)
@@ -56,13 +53,22 @@ class TokenDingsService(
                 .jwtID(UUID.randomUUID().toString())
                 .expirationTime(Date(Clock.systemUTC().millis() + 120000))
                 .build()
-        ).run {
-            sign(RSASSASigner(base64ToPrivateKey(environment.tokenDings.privateKeyBase64) as PrivateKey))
-            Jws(serialize())
-        }
+                .sign(JWK.parse(environment.tokenDings.jwksPrivate).toRSAKey())
+                .serialize()
+        )
     }
 
-    private suspend fun getToken(jwsToken: Jws): AccessToken =
+    private fun JWTClaimsSet.sign(rsaKey: RSAKey): SignedJWT =
+        SignedJWT(
+            JWSHeader.Builder(JWSAlgorithm.RS256)
+                .keyID(rsaKey.keyID)
+                .type(JOSEObjectType.JWT).build(),
+            this
+        ).apply {
+            sign(RSASSASigner(rsaKey.toPrivateKey()))
+        }
+
+    suspend fun getToken(jwsToken: Jws): AccessToken =
         handlerUtils.tryRequest("Making a Formdata Url-encoded Token request for TokenDings", tokenConfiguration.wellKnownMetadata.tokenEndpoint) {
             val response = handlerUtils.defaultHttpClient.submitForm<AccessTokenResponse>(
                 parametersOf(
@@ -78,5 +84,5 @@ class TokenDingsService(
             AccessToken(response.accessToken)
         }
 
-    suspend fun bearerToken(jwsToken: Jws) = "$BEARER ${getToken(jwsToken)}"
+    fun bearerToken(accessToken: AccessToken) = "$BEARER $accessToken"
 }
