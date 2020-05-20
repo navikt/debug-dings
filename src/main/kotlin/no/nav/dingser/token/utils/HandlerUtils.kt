@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.statement.readText
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 
@@ -22,9 +24,13 @@ class HandlerUtils {
         return try {
             block()
         } catch (e: Exception) {
-            log.warn { "Error from request url: $path " }
+            log.warn { "Something went wrong with request to url: $path " }
+            if (e is ClientRequestException) {
+                val responseMessage = e.response.readText()
+                log.warn { "$callName - Response: $responseMessage" }
+            }
             throw IllegalStateException(e).also {
-                log.error(e) { "$callName - Error Message: ${e.message}" }
+                log.error { "Error Message: ${e.message}" }
             }
         }
     }
