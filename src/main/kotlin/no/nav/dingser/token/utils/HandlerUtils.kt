@@ -24,7 +24,7 @@ class HandlerUtils {
         } catch (e: Exception) {
             log.warn { "Error from request url: $path " }
             throw IllegalStateException(e).also {
-                log.error { "$callName - Error Message: ${e.message}" }
+                log.error(e) { "$callName - Error Message: ${e.message}" }
             }
         }
     }

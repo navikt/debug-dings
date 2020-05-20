@@ -45,7 +45,7 @@ class TokenDingsService(
     private val jwkToRSA = JWKSet.parse(environment.tokenDings.jwksPrivate).keys[0].toRSAKey()
 
     fun createJws(): Jws {
-        log.info { "KID: ${jwkToRSA.keyID}" }
+        log.info { "KID: ${JWKSet.parse(environment.tokenDings.jwksPrivate).keys.map { it.keyID }}" }
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
         return Jws(
             JWTClaimsSet.Builder()
