@@ -8,6 +8,7 @@ import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import io.ktor.auth.OAuthAccessTokenResponse
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.url
 import io.ktor.http.parametersOf
@@ -36,10 +37,8 @@ internal const val CLIENT_ASSERTION_TYPE = "urn:ietf:params:oauth:client-asserti
 
 class TokenDingsService(
     private val environment: Environment,
-    private val subjectToken: String?,
     val tokenConfiguration: TokenConfiguration,
     private val handlerUtils: HandlerUtils = HandlerUtils()
-
 ) {
 
     private val jwkToRSA = JWKSet.parse(environment.tokenDings.jwksPrivate).keys[0].toRSAKey()
@@ -71,7 +70,7 @@ class TokenDingsService(
             sign(RSASSASigner(rsaKey.toPrivateKey()))
         }
 
-    suspend fun getToken(jwsToken: Jws): AccessToken =
+    suspend fun getToken(jwsToken: Jws, subjectToken: String?): AccessToken =
         handlerUtils.tryRequest("Making a Formdata Url-encoded Token request for TokenDings", tokenConfiguration.wellKnownMetadata.tokenEndpoint) {
             val response = handlerUtils.defaultHttpClient.submitForm<AccessTokenResponse>(
                 parametersOf(
@@ -88,4 +87,15 @@ class TokenDingsService(
         }
 
     fun bearerToken(accessToken: AccessToken) = "$BEARER $accessToken"
+
+    suspend fun exchangeToken(principal: OAuthAccessTokenResponse.OAuth2?): String {
+        // Try to exchange token with TokenDings
+        val jwsToken = createJws()
+        val tokenToExchange = principal?.let {
+            getToken(jwsToken, it.accessToken)
+        }.also {
+            it ?: throw IllegalStateException("Could not get User token from Login")
+        }
+        return bearerToken(tokenToExchange!!)
+    }
 }

@@ -82,7 +82,6 @@ object TokenDingsServiceSpek : Spek({
 
     val tokenDingsService = TokenDingsService(
         environment = environment,
-        subjectToken = "",
         tokenConfiguration = tokenConfigTokenDings
     )
 
@@ -111,7 +110,7 @@ object TokenDingsServiceSpek : Spek({
 
             it("Should return and serialize Token") {
                 val tokenExchanged = runBlocking {
-                    tokenDingsService.getToken(jws)
+                    tokenDingsService.getToken(jws, subjectToken = "")
                 }
                 val bearerToken = tokenDingsService.bearerToken(tokenExchanged)
                 bearerToken.substringAfter("Bearer").trim() `should be equal to` accessTokenResponse.accessToken

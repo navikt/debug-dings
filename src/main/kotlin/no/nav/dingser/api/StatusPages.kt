@@ -1,4 +1,4 @@
-package no.nav.dingser.api.v1
+package no.nav.dingser.api
 
 import io.ktor.application.call
 import io.ktor.features.StatusPages

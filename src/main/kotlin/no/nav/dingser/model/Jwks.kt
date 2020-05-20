@@ -1,4 +1,4 @@
-package no.nav.dingser.models
+package no.nav.dingser.model
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

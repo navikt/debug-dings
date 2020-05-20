@@ -20,9 +20,9 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import no.nav.dingser.api.v1.exceptionHandler
-import no.nav.dingser.api.v1.idporten
-import no.nav.dingser.api.v1.selfTest
+import no.nav.dingser.api.exceptionHandler
+import no.nav.dingser.api.idporten
+import no.nav.dingser.api.selfTest
 import no.nav.dingser.config.Environment
 import no.nav.dingser.token.utils.TokenConfiguration
 import org.slf4j.event.Level
