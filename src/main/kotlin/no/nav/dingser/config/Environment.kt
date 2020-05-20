@@ -7,6 +7,8 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
+import java.io.File
+import java.io.FileNotFoundException
 
 private val config: Configuration =
     systemProperties() overriding
@@ -37,11 +39,17 @@ data class Environment(
 
         // val clientId: String = config.getOrElse(Key("tokendings.client.id", stringType), "client_id"),
         // val jwksPublic: String = config.getOrElse(Key("tokendings.jwks.public", stringType), "jwks_public"),
-        // DINGSER_TOKENDINGS_JWK_PRIVATE
-        val jwksPrivate: String = config.getOrElse(Key("dingser.tokendings.jwk.private", stringType), "jwks_private")
+        val jwksPrivate: String = "/dingser-secret".readFile() ?: "jwks_private"
         // val privateKeyBase64: String = config.getOrElse(Key("tokendings.private.key.base64", stringType), "RSA_PRIVATE_KEY")
     )
 }
+
+internal fun String.readFile(): String? =
+    try {
+        File(this).readText(Charsets.UTF_8)
+    } catch (err: FileNotFoundException) {
+        null
+    }
 
 enum class Profile {
     TEST, NON_PROD, PROD
