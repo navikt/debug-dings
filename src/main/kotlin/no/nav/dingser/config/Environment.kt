@@ -37,7 +37,8 @@ data class Environment(
 
         // val clientId: String = config.getOrElse(Key("tokendings.client.id", stringType), "client_id"),
         // val jwksPublic: String = config.getOrElse(Key("tokendings.jwks.public", stringType), "jwks_public"),
-        val jwksPrivate: String = config.getOrElse(Key("tokendings.jwks.private", stringType), "jwks_private")
+        // DINGSER_TOKENDINGS_JWK_PRIVATE
+        val jwksPrivate: String = config.getOrElse(Key("dingser.tokendings.jwk.private", stringType), "jwks_private")
         // val privateKeyBase64: String = config.getOrElse(Key("tokendings.private.key.base64", stringType), "RSA_PRIVATE_KEY")
     )
 }
