@@ -1,13 +1,16 @@
 package no.nav.dingser
 
+import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
+import no.nav.dingser.token.OauthSettings
 
 private val log = KotlinLogging.logger { }
 
 data class ApplicationStatus(var running: Boolean = true, var initialized: Boolean = false)
+
 data class AppConfiguration(
     val applicationStatus: ApplicationStatus = ApplicationStatus(
         running = true,
@@ -16,13 +19,16 @@ data class AppConfiguration(
     val environment: Environment = Environment()
 )
 
+@KtorExperimentalAPI
 fun main() = startServer()
 
+@KtorExperimentalAPI
 fun startServer() {
     runBlocking {
         val applicationStatus = AppConfiguration().applicationStatus
         val environment = AppConfiguration().environment
-        val dingserServer = createHttpServer(environment, applicationStatus)
+        val oauthSettings = OauthSettings(environment = environment)
+        val dingserServer = createHttpServer(environment, applicationStatus, oauthSettings)
 
         DefaultExports.initialize()
         Runtime.getRuntime().addShutdownHook(Thread {

@@ -3,8 +3,14 @@ package no.nav.dingser
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.nimbusds.jose.crypto.RSASSAVerifier
+import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.SignedJWT
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.withTestApplication
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
 import no.nav.dingser.config.Environment
 import no.nav.dingser.config.encodeBase64
@@ -12,33 +18,39 @@ import no.nav.dingser.mokk.OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN
 import no.nav.dingser.mokk.OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS
 import no.nav.dingser.mokk.configurationServerMokk
 import no.nav.dingser.mokk.generateRsaKey
-import no.nav.dingser.mokk.idportenStub
 import no.nav.dingser.mokk.toJWKSet
 import no.nav.dingser.mokk.tokenDingsStub
 import no.nav.dingser.mokk.wellknownStub
+import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.utils.AccessTokenResponse
 import no.nav.dingser.token.utils.TokenConfiguration
 import no.nav.dingser.token.utils.objectMapper
+import no.nav.security.mock.oauth2.MockOAuth2Server
+import no.nav.security.mock.oauth2.OAuth2Config
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldBeEqualTo
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.context
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import java.text.ParseException
 import java.util.*
 import kotlin.test.fail
 
+@KtorExperimentalAPI
 object TokenDingsServiceSpek : Spek({
 
-    // Mock DIFI and TokenDings server
     val server = WireMockServer(
         WireMockConfiguration.options().dynamicPort().notifier(Slf4jNotifier(true))
     ).also { it.start() }
 
     // Mock Wellknown
     val configurationServerMokk = configurationServerMokk(server.port())
+    // server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN, configurationServerMokk)
+    server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS, configurationServerMokk)
+
+    // Difi Server
+    val DIFI_PORT = 8000
+    MockOAuth2Server(OAuth2Config(interactiveLogin = false)).start(DIFI_PORT)
 
     val rsaKey = generateRsaKey()
 
@@ -48,13 +60,12 @@ object TokenDingsServiceSpek : Spek({
             profile = "TEST"
         ),
         idporten = Environment.Idporten(
-            "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
+            "http://localhost:$DIFI_PORT/test$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
         ),
         tokenDings = Environment.TokenDings(
             issuer = "cluster:namespace:app1",
             audience = "cluster:namespace:app2",
             metadata = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
-            // clientId = "1010",
             // jwksPublic = objectMapper.writeValueAsString(
             //    Keys(listOf(objectMapper.readValue(rsaKey.first.toPublicJWK().toJSONString())))),
             jwksPrivate = toJWKSet(rsaKey.first, isPublic = false)!!.toJSONString()
@@ -72,12 +83,6 @@ object TokenDingsServiceSpek : Spek({
         accessToken = accessTokenString, expiresIn = expiresIn, scope = mockScope
     )
 
-    // Setup server for wellknown, both DIFI and TokenDings are mocked here
-    server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN, configurationServerMokk)
-    server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS, configurationServerMokk)
-    server.idportenStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
-
-    // Setup Test Classes, They are alike - using same issuer, in test, but nice to separate them for reading
     val tokenConfigTokenDings = TokenConfiguration(environment.tokenDings.metadata)
 
     val tokenDingsService = TokenDingsService(
@@ -90,12 +95,10 @@ object TokenDingsServiceSpek : Spek({
             server.tokenDingsStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
             val jws = tokenDingsService.createJws()
 
-            it("validate Created token") {
-                try {
-                    SignedJWT.parse(jws.token)
-                } catch (e: ParseException) {
-                    fail("Could not parse token")
-                }
+            it("Validate Created token") {
+
+                parseAndValidateSignatur(rsaKey = rsaKey.first, token = jws.token)
+
                 val parsedToken = SignedJWT.parse(jws.token)
                 val body = parsedToken.jwtClaimsSet
                 val header = parsedToken.header
@@ -117,7 +120,37 @@ object TokenDingsServiceSpek : Spek({
             }
         }
     }
+    withTestApplication(moduleFunction = {
+        setupHttpServer(
+            environment = environment,
+            applicationStatus = ApplicationStatus(),
+            oauthSettings = OauthSettings(environment = environment))
+    }) {
+        describe("Get a token from Authz Endpoint") {
+            with(handleRequest(
+                HttpMethod.Get, "/oauth"
+            ) {
+            }) {
+                context("Get token from MockIdporten") {
+                    println(response.content)
+                }
+            }
+        }
+    }
     afterGroup {
         server.stop()
     }
 })
+
+internal fun parseAndValidateSignatur(rsaKey: RSAKey, token: String) {
+    val signedJwt = try {
+        SignedJWT.parse(token)
+    } catch (e: ParseException) {
+        fail("Could not parse token: ${e.message}")
+    }
+    try {
+        signedJwt.verify(RSASSAVerifier(rsaKey))
+    } catch (e: Exception) {
+        fail("Could not validate signature: ${e.message}")
+    }
+}

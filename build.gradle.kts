@@ -21,7 +21,7 @@ val ioPrometheusVersion = "0.9.0"
 val kotlinloggingVersion = "1.7.9"
 
 // Test
-val spekVersion = "1.2.1"
+val spek = "2.0.8"
 val kluentVersion = "1.61"
 val wiremockVersion = "2.26.3"
 val platformRunner = "1.5.1"
@@ -66,8 +66,6 @@ dependencies {
 
     implementation ("io.ktor:ktor-client-okhttp:$ktorVersion")
 
-    implementation ("no.nav.security:mock-oauth2-server:0.1.33")
-
     implementation("io.ktor:ktor-auth:$ktorVersion")
 
     implementation ("io.ktor:ktor-client-cio:$ktorVersion")
@@ -90,18 +88,16 @@ dependencies {
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
 
+    implementation ("no.nav.security:mock-oauth2-server:0.1.33")
+
     implementation ("io.prometheus:simpleclient_hotspot:$ioPrometheusVersion")
     implementation ("io.prometheus:simpleclient_common:$ioPrometheusVersion")
     implementation ("io.github.microutils:kotlin-logging:$kotlinloggingVersion")
 
-    testImplementation("org.jetbrains.spek:spek-api:$spekVersion") {
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek") {
         exclude(group = "org.jetbrains.kotlin")
     }
-    testImplementation("org.jetbrains.spek:spek-data-driven-extension:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    testRuntime("org.jetbrains.spek:spek-junit-platform-engine:$spekVersion") {
-        exclude(group = "org.junit.platform")
+    testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spek") {
         exclude(group = "org.jetbrains.kotlin")
     }
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
