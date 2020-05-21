@@ -6,19 +6,18 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-
-internal const val BEARER = "Bearer"
 
 private val log = KotlinLogging.logger { }
 
 class TokenConfiguration(
-    wellknownUrl: String
+    val wellknownUrl: String,
+    private val handlerUtils: HandlerUtils = HandlerUtils()
 ) {
 
-    private val handlerUtils = HandlerUtils()
-
+    @KtorExperimentalAPI
     val wellKnownMetadata: OauthServerConfigurationMetadata = runBlocking {
         handlerUtils.tryRequest("Getting WellKnown configuration from: ", wellknownUrl) {
             handlerUtils.defaultHttpClient.get<OauthServerConfigurationMetadata> {

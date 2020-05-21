@@ -9,14 +9,16 @@ import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
+import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
-import no.nav.dingser.identityServerName
+import no.nav.dingser.token.identityServerName
 import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.utils.TokenConfiguration
 
 private val log = KotlinLogging.logger { }
 
+@KtorExperimentalAPI
 fun Routing.idporten(
     tokenConfiguration: TokenConfiguration,
     environment: Environment
@@ -30,6 +32,7 @@ private fun Routing.generateToken() =
         call.respondText("""Click <a href="/oauth">here</a> to get tokens""", ContentType.Text.Html)
     }
 
+@KtorExperimentalAPI
 private fun Routing.authCallback(tokenConfiguration: TokenConfiguration, environment: Environment) =
     route("/") {
         authenticate(identityServerName) {

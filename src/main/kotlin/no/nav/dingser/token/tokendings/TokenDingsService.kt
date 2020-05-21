@@ -12,11 +12,11 @@ import io.ktor.auth.OAuthAccessTokenResponse
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.url
 import io.ktor.http.parametersOf
+import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
 import no.nav.dingser.token.utils.AccessToken
 import no.nav.dingser.token.utils.AccessTokenResponse
-import no.nav.dingser.token.utils.BEARER
 import no.nav.dingser.token.utils.HandlerUtils
 import no.nav.dingser.token.utils.Jws
 import no.nav.dingser.token.utils.TokenConfiguration
@@ -34,6 +34,7 @@ internal const val PARAMS_AUDIENCE = "audience"
 internal const val PARAMS_CLIENT_ASSERTION = "client_assertion"
 internal const val PARAMS_CLIENT_ASSERTION_TYPE = "client_assertion_type"
 internal const val CLIENT_ASSERTION_TYPE = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+internal const val BEARER = "Bearer"
 
 class TokenDingsService(
     private val environment: Environment,
@@ -43,8 +44,9 @@ class TokenDingsService(
 
     private val jwkToRSA = JWKSet.parse(environment.tokenDings.jwksPrivate).keys[0].toRSAKey()
 
+    @KtorExperimentalAPI
     fun createJws(): Jws {
-        log.info { "KID: ${JWKSet.parse(environment.tokenDings.jwksPrivate).keys.map { it.keyID }}" }
+        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(environment.tokenDings.jwksPrivate).keys.map { it.keyID }}" }
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
         return Jws(
             JWTClaimsSet.Builder()
@@ -70,6 +72,7 @@ class TokenDingsService(
             sign(RSASSASigner(rsaKey.toPrivateKey()))
         }
 
+    @KtorExperimentalAPI
     suspend fun getToken(jwsToken: Jws, subjectToken: String?): AccessToken =
         handlerUtils.tryRequest("Making a Formdata Url-encoded Token request for TokenDings", tokenConfiguration.wellKnownMetadata.tokenEndpoint) {
             val response = handlerUtils.defaultHttpClient.submitForm<AccessTokenResponse>(
@@ -88,6 +91,7 @@ class TokenDingsService(
 
     fun bearerToken(accessToken: AccessToken) = "$BEARER $accessToken"
 
+    @KtorExperimentalAPI
     suspend fun exchangeToken(principal: OAuthAccessTokenResponse.OAuth2?): String {
         // Try to exchange token with TokenDings
         val jwsToken = createJws()
