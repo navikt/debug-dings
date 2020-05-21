@@ -1,9 +1,9 @@
 name: Build, push, and deploy to GCP
 
-on: push
- # push:
- #   branches:
- #     - master
+on:
+  push:
+    branches:
+      - master
 
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/dingser:${{ github.sha }}
