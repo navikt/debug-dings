@@ -12,19 +12,18 @@ import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
-import no.nav.dingser.token.identityServerName
+import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.TokenDingsService
-import no.nav.dingser.token.utils.TokenConfiguration
 
 private val log = KotlinLogging.logger { }
 
 @KtorExperimentalAPI
 fun Routing.idporten(
-    tokenConfiguration: TokenConfiguration,
+    oauthSettings: OauthSettings,
     environment: Environment
 ) {
     generateToken()
-    authCallback(tokenConfiguration, environment)
+    authCallback(oauthSettings, environment)
 }
 
 private fun Routing.generateToken() =
@@ -33,19 +32,16 @@ private fun Routing.generateToken() =
     }
 
 @KtorExperimentalAPI
-private fun Routing.authCallback(tokenConfiguration: TokenConfiguration, environment: Environment) =
+private fun Routing.authCallback(oauthSettings: OauthSettings, environment: Environment) =
     route("/") {
-        authenticate(identityServerName) {
+        authenticate(oauthSettings.identityServerName) {
             get("/oauth") {
                 val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
-
                 call.respondText("Access Token = ${principal?.accessToken}")
-
                 val tokenDingsService = TokenDingsService(
-                    tokenConfiguration = tokenConfiguration,
+                    tokenConfiguration = oauthSettings.tokenDingsConfiguration,
                     environment = environment
                 )
-
                 val exchangedToken = tokenDingsService.exchangeToken(principal)
                 // log.info { runBlocking {  OutboundApiService(exchangedToken).getResponse() } }
             }

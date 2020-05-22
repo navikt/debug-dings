@@ -6,10 +6,9 @@ import io.ktor.util.KtorExperimentalAPI
 import no.nav.dingser.config.Environment
 import no.nav.dingser.token.utils.TokenConfiguration
 
-var identityServerName = "IdentityServerDingser"
-
 class OauthSettings(
-    private val environment: Environment
+    private val environment: Environment,
+    var identityServerName: String = "IdentityServerDingser"
 ) {
     val difiConfiguration = TokenConfiguration(wellknownUrl = environment.idporten.metadata)
 
