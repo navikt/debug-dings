@@ -23,7 +23,6 @@ import no.nav.dingser.api.idporten
 import no.nav.dingser.api.selfTest
 import no.nav.dingser.config.Environment
 import no.nav.dingser.token.OauthSettings
-import no.nav.dingser.token.identityServerName
 import org.slf4j.event.Level
 
 private val log = KotlinLogging.logger { }
@@ -44,9 +43,9 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
 
     log.info { "Application Profile running: ${environment.application.profile}" }
     log.info { "Setup Authentication with Idp: ${oauthSettings.difiConfiguration.wellKnownMetadata.issuer}" }
-    log.info { "Installing Authentication Server Name: $identityServerName" }
+    log.info { "Installing Authentication Server Name: ${oauthSettings.identityServerName}" }
     install(Authentication) {
-        oauth(identityServerName) {
+        oauth(oauthSettings.identityServerName) {
             // will handle the back channel requests to the token endpoint
             client = HttpClient(CIO)
             // client settings from before
@@ -75,7 +74,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     log.info { "Installing routes" }
     install(Routing) {
         selfTest(readySelfTestCheck = { applicationStatus.initialized }, aLiveSelfTestCheck = { applicationStatus.running })
-        idporten(oauthSettings.tokenDingsConfiguration, environment)
+        idporten(oauthSettings, environment)
     }
     applicationStatus.initialized = true
     log.info { "Application is up and running" }

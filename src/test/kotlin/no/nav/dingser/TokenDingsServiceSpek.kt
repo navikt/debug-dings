@@ -34,6 +34,7 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.text.ParseException
 import java.util.*
+import kotlin.test.assertEquals
 import kotlin.test.fail
 
 @KtorExperimentalAPI
@@ -45,11 +46,11 @@ object TokenDingsServiceSpek : Spek({
 
     // Mock Wellknown
     val configurationServerMokk = configurationServerMokk(server.port())
-    // server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN, configurationServerMokk)
     server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS, configurationServerMokk)
 
     // Difi Server
     val DIFI_PORT = 8000
+    val APP_PORT = 8888
     MockOAuth2Server(OAuth2Config(interactiveLogin = false)).start(DIFI_PORT)
 
     val rsaKey = generateRsaKey()
@@ -57,7 +58,9 @@ object TokenDingsServiceSpek : Spek({
     // Setup environment for testing
     val environment = Environment(
         application = Environment.Application(
-            profile = "TEST"
+            profile = "TEST",
+            port = APP_PORT,
+            redirectUrl = "http://localhost:$APP_PORT/oauth"
         ),
         idporten = Environment.Idporten(
             "http://localhost:$DIFI_PORT/test$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
@@ -72,8 +75,6 @@ object TokenDingsServiceSpek : Spek({
             // privateKeyBase64 = Base64.getEncoder().encodeToString(rsaKey.second!!.encoded)
         )
     )
-
-    println(toJWKSet(rsaKey.first, isPublic = false))
 
     // Mock TOKEN
     val accessTokenString = encodeBase64("client".toByteArray())
@@ -124,7 +125,7 @@ object TokenDingsServiceSpek : Spek({
         setupHttpServer(
             environment = environment,
             applicationStatus = ApplicationStatus(),
-            oauthSettings = OauthSettings(environment = environment))
+            oauthSettings = OauthSettings(environment = environment, identityServerName = "identityTest"))
     }) {
         describe("Get a token from Authz Endpoint") {
             with(handleRequest(
@@ -132,7 +133,9 @@ object TokenDingsServiceSpek : Spek({
             ) {
             }) {
                 context("Get token from MockIdporten") {
-                    println(response.content)
+                    assertEquals(302, response.status()?.value)
+                    assertEquals(null, response.content)
+                    assertEquals("http://localhost:8000/test/authorize?client_id=client_id&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth&scope=openid&state=****&response_type=code&response_mode=query", Regex("state=(\\w+)").replace(response.headers["Location"].toString(), "state=****"))
                 }
             }
         }
