@@ -95,11 +95,11 @@ class TokenDingsService(
     suspend fun exchangeToken(principal: OAuthAccessTokenResponse.OAuth2?): String {
         // Try to exchange token with TokenDings
         val jwsToken = createJws()
-        val tokenToExchange = principal?.let {
+        val accessToken = principal?.let {
             getToken(jwsToken, it.accessToken)
         }.also {
             it ?: throw IllegalStateException("Could not get User token from Login")
         }
-        return bearerToken(tokenToExchange!!)
+        return bearerToken(accessToken!!)
     }
 }

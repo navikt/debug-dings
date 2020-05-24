@@ -22,6 +22,7 @@ import no.nav.dingser.mokk.toJWKSet
 import no.nav.dingser.mokk.tokenDingsStub
 import no.nav.dingser.mokk.wellknownStub
 import no.nav.dingser.token.OauthSettings
+import no.nav.dingser.token.tokendings.BEARER
 import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.utils.AccessTokenResponse
 import no.nav.dingser.token.utils.TokenConfiguration
@@ -79,9 +80,11 @@ object TokenDingsServiceSpek : Spek({
     // Mock TOKEN
     val accessTokenString = encodeBase64("client".toByteArray())
     val expiresIn = 200
-    val mockScope = environment.idporten.scope
     val accessTokenResponse = AccessTokenResponse(
-        accessToken = accessTokenString, expiresIn = expiresIn, scope = mockScope
+        accessToken = accessTokenString,
+        issuedTokenType = "urn:ietf:params:oauth:token-type:access_token",
+        expiresIn = expiresIn,
+        tokenType = BEARER
     )
 
     val tokenConfigTokenDings = TokenConfiguration(environment.tokenDings.metadata)
