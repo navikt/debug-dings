@@ -1,6 +1,7 @@
 package no.nav.dingser
 
 import com.fasterxml.jackson.databind.SerializationFeature
+import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.auth.Authentication
@@ -10,6 +11,7 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
+import io.ktor.freemarker.FreeMarker
 import io.ktor.jackson.jackson
 import io.ktor.request.path
 import io.ktor.routing.Routing
@@ -70,6 +72,9 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
         jackson {
             configure(SerializationFeature.INDENT_OUTPUT, true)
         }
+    }
+    install(FreeMarker) {
+        templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
     }
     log.info { "Installing routes" }
     install(Routing) {
