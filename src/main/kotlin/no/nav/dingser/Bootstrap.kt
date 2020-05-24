@@ -23,6 +23,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
+import no.nav.dingser.api.debuggerApi
 import no.nav.dingser.api.exceptionHandler
 import no.nav.dingser.api.idporten
 import no.nav.dingser.api.selfTest
@@ -81,6 +82,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     install(Routing) {
         selfTest(readySelfTestCheck = { applicationStatus.initialized }, aLiveSelfTestCheck = { applicationStatus.running })
         idporten(oauthSettings, environment)
+        debuggerApi(oauthSettings, environment.tokenDings)
     }
     applicationStatus.initialized = true
     log.info { "Application is up and running" }
