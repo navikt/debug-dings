@@ -12,16 +12,14 @@ class OutboundApiService(
     private val handlerUtils: HandlerUtils = HandlerUtils()
 ) {
 
-    private val outboundApp = "http://dings-validate.plattformsikkerhet.svc.dev-gcp.local/api/v1/token"
+    private val outboundApp = "http://dings-validate/hello"
 
     @KtorExperimentalAPI
     suspend fun getResponse() =
         handlerUtils.tryRequest("Getting response from: ", outboundApp) {
-            handlerUtils.defaultHttpClient.get<ApiResponse> {
+            handlerUtils.defaultHttpClient.get<String> {
                 header(HttpHeaders.Authorization, accessToken)
                 url(outboundApp)
             }
         }
 }
-
-data class ApiResponse(val keys: String, val result: String)
