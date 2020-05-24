@@ -4,10 +4,13 @@ import io.ktor.application.call
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
+import no.nav.dingser.HttpException
 import javax.security.sasl.AuthenticationException
 
 fun StatusPages.Configuration.exceptionHandler() {
-
+    exception<HttpException> { cause ->
+        call.respond(cause.httpStatusCode, "message: ${cause.message}")
+    }
     exception<InternalError> { cause ->
         val status = HttpStatusCode.InternalServerError
         call.respond(status,

@@ -1,6 +1,8 @@
 package no.nav.dingser
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.install
@@ -12,7 +14,8 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.freemarker.FreeMarker
-import io.ktor.jackson.jackson
+import io.ktor.http.ContentType
+import io.ktor.jackson.JacksonConverter
 import io.ktor.request.path
 import io.ktor.routing.Routing
 import io.ktor.server.engine.embeddedServer
@@ -69,9 +72,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     }
     log.info { "Installing ObjectMapper" }
     install(ContentNegotiation) {
-        jackson {
-            configure(SerializationFeature.INDENT_OUTPUT, true)
-        }
+        register(ContentType.Application.Json, JacksonConverter(Jackson.defaultMapper))
     }
     install(FreeMarker) {
         templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
@@ -83,4 +84,12 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     }
     applicationStatus.initialized = true
     log.info { "Application is up and running" }
+}
+
+object Jackson {
+    val defaultMapper: ObjectMapper = jacksonObjectMapper()
+
+    init {
+        defaultMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
+    }
 }

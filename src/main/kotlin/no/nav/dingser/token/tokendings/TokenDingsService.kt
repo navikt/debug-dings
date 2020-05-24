@@ -9,19 +9,19 @@ import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.auth.OAuthAccessTokenResponse
+import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.submitForm
-import io.ktor.client.request.url
 import io.ktor.http.parametersOf
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
 import no.nav.dingser.token.utils.AccessToken
 import no.nav.dingser.token.utils.AccessTokenResponse
-import no.nav.dingser.token.utils.HandlerUtils
-import no.nav.dingser.token.utils.Jws
-import no.nav.dingser.token.utils.TokenConfiguration
-import java.time.Clock
-import java.util.*
+import no.nav.dingser.token.utils.defaultHttpClient
+import no.nav.dingser.token.utils.withLog
+import java.time.Instant
+import java.util.Date
+import java.util.UUID
 
 private val log = KotlinLogging.logger { }
 
@@ -37,56 +37,16 @@ internal const val CLIENT_ASSERTION_TYPE = "urn:ietf:params:oauth:client-asserti
 internal const val BEARER = "Bearer"
 
 class TokenDingsService(
-    private val environment: Environment,
-    val tokenConfiguration: TokenConfiguration,
-    private val handlerUtils: HandlerUtils = HandlerUtils()
+    private val tokenDingsConfig: Environment.TokenDings
 ) {
-
-    private val jwkToRSA = JWKSet.parse(environment.tokenDings.jwksPrivate).keys[0].toRSAKey()
+    private val jwkToRSA = JWKSet.parse(tokenDingsConfig.jwksPrivate).keys[0].toRSAKey()
 
     @KtorExperimentalAPI
-    fun createJws(): Jws {
-        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(environment.tokenDings.jwksPrivate).keys.map { it.keyID }}" }
+    fun clientAssertion(): String {
+        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(tokenDingsConfig.jwksPrivate).keys.map { it.keyID }}" }
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
-        return Jws(
-            JWTClaimsSet.Builder()
-                .audience(tokenConfiguration.wellKnownMetadata.tokenEndpoint)
-                .subject(environment.tokenDings.issuer)
-                .issuer(environment.tokenDings.issuer)
-                .issueTime(Date(Clock.systemUTC().millis()))
-                .jwtID(UUID.randomUUID().toString())
-                .expirationTime(Date(Clock.systemUTC().millis() + 120000))
-                .build()
-                .sign(jwkToRSA)
-                .serialize()
-        )
+        return clientAssertion(tokenDingsConfig.clientId, tokenDingsConfig.metadata.tokenEndpoint, jwkToRSA)
     }
-
-    private fun JWTClaimsSet.sign(rsaKey: RSAKey): SignedJWT =
-        SignedJWT(
-            JWSHeader.Builder(JWSAlgorithm.RS256)
-                .keyID(rsaKey.keyID)
-                .type(JOSEObjectType.JWT).build(),
-            this
-        ).apply {
-            sign(RSASSASigner(rsaKey.toPrivateKey()))
-        }
-
-    @KtorExperimentalAPI
-    suspend fun getToken(jwsToken: Jws, subjectToken: String?) =
-        handlerUtils.tryRequest("Making a Formdata Url-encoded Token request for TokenDings", tokenConfiguration.wellKnownMetadata.tokenEndpoint) {
-            handlerUtils.defaultHttpClient.submitForm<AccessTokenResponse>(
-                parametersOf(
-                    PARAMS_CLIENT_ASSERTION to listOf(jwsToken.token),
-                    PARAMS_CLIENT_ASSERTION_TYPE to listOf(CLIENT_ASSERTION_TYPE),
-                    PARAMS_GRANT_TYPE to listOf(GRANT_TYPE),
-                    PARAMS_SUBJECT_TOKEN to listOf(subjectToken!!),
-                    PARAMS_SUBJECT_TOKEN_TYPE to listOf(SUBJECT_TOKEN_TYPE),
-                    PARAMS_AUDIENCE to listOf(environment.tokenDings.audience))
-            ) {
-                url(tokenConfiguration.wellKnownMetadata.tokenEndpoint)
-            }
-        }
 
     fun bearerToken(accessToken: AccessToken) = "$BEARER $accessToken"
 
@@ -94,7 +54,14 @@ class TokenDingsService(
     suspend fun exchangeToken(principal: OAuthAccessTokenResponse.OAuth2?): String {
         // Try to exchange token with TokenDings
         val tokenResponse = principal?.let {
-            getToken(createJws(), it.accessToken)
+            defaultHttpClient.tokenExchange(
+                tokenDingsConfig.metadata.tokenEndpoint,
+                OAuth2TokenExchangeRequest(
+                    clientAssertion(),
+                    it.accessToken,
+                    tokenDingsConfig.audience
+                )
+            )
         }
         log.info { "Tokendings Token Expires In: ${tokenResponse!!.expiresIn}\nIssued Token Type: ${tokenResponse.issuedTokenType}" }
         return bearerToken(
@@ -102,3 +69,49 @@ class TokenDingsService(
         )
     }
 }
+
+suspend fun HttpClient.tokenExchange(url: String, request: OAuth2TokenExchangeRequest) =
+    withLog("exchanging token with tokendings", url) {
+        this.submitForm<AccessTokenResponse>(
+            url = url,
+            formParameters = parametersOf(
+                PARAMS_CLIENT_ASSERTION to listOf(request.clientAssertion),
+                PARAMS_CLIENT_ASSERTION_TYPE to listOf(request.clientAssertionType),
+                PARAMS_GRANT_TYPE to listOf(request.grantType),
+                PARAMS_SUBJECT_TOKEN to listOf(request.subjectToken),
+                PARAMS_SUBJECT_TOKEN_TYPE to listOf(request.subjectTokenType),
+                PARAMS_AUDIENCE to listOf(request.audience)
+            )
+        )
+    }
+
+fun clientAssertion(clientId: String, audience: String, rsaKey: RSAKey) =
+    JWTClaimsSet.Builder()
+        .issuer(clientId)
+        .subject(clientId)
+        .audience(audience)
+        .issueTime(Date.from(Instant.now()))
+        .expirationTime(Date.from(Instant.now().plusSeconds(60)))
+        .jwtID(UUID.randomUUID().toString())
+        .build()
+        .sign(rsaKey)
+        .serialize()
+
+internal fun JWTClaimsSet.sign(rsaKey: RSAKey): SignedJWT =
+    SignedJWT(
+        JWSHeader.Builder(JWSAlgorithm.RS256)
+            .keyID(rsaKey.keyID)
+            .type(JOSEObjectType.JWT).build(),
+        this
+    ).apply {
+        sign(RSASSASigner(rsaKey.toPrivateKey()))
+    }
+
+data class OAuth2TokenExchangeRequest(
+    val clientAssertion: String,
+    val subjectToken: String,
+    val audience: String,
+    val subjectTokenType: String = SUBJECT_TOKEN_TYPE,
+    val clientAssertionType: String = CLIENT_ASSERTION_TYPE,
+    val grantType: String = GRANT_TYPE
+)
