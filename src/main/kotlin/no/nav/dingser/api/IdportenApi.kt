@@ -10,8 +10,10 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
+import no.nav.dingser.service.OutboundApiService
 import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.TokenDingsService
 
@@ -43,7 +45,7 @@ private fun Routing.authCallback(oauthSettings: OauthSettings, environment: Envi
                     environment = environment
                 )
                 val exchangedToken = tokenDingsService.exchangeToken(principal)
-                // log.info { runBlocking {  OutboundApiService(exchangedToken).getResponse() } }
+                log.info { runBlocking {  OutboundApiService(exchangedToken).getResponse() } }
             }
         }
     }

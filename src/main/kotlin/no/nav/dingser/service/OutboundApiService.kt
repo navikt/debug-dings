@@ -12,7 +12,7 @@ class OutboundApiService(
     private val handlerUtils: HandlerUtils = HandlerUtils()
 ) {
 
-    private val outboundApp = "http://dings-validate/api/v1/token"
+    private val outboundApp = "http://dings-validate.plattformsikkerhet.svc.dev-gcp.local/api/v1/token"
 
     @KtorExperimentalAPI
     suspend fun getResponse() =
