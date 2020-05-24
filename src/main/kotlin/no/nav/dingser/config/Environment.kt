@@ -35,7 +35,7 @@ data class Environment(
     data class TokenDings(
         val metadata: String = config.getOrElse(Key("tokendings.wellknown", stringType), "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"),
         val issuer: String = config.getOrElse(Key("tokendings.sub", stringType), ":plattformsikkerhet:dingser"),
-        val audience: String = config.getOrElse(Key("tokendings.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
+        val audience: String = config.getOrElse(Key("tokendings.audience", stringType), ":plattformsikkerhet:dings-validate"),
         val jwksPrivate: String = "/var/run/secrets/jwks".readFile() ?: "jwks_private"
     )
 }
