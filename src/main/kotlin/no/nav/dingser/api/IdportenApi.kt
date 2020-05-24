@@ -45,7 +45,7 @@ private fun Routing.authCallback(oauthSettings: OauthSettings, environment: Envi
                     environment = environment
                 )
                 val exchangedToken = tokenDingsService.exchangeToken(principal)
-                log.info { runBlocking {  OutboundApiService(exchangedToken).getResponse() } }
+                log.info { runBlocking { OutboundApiService(exchangedToken).getResponse() } }
             }
         }
     }
