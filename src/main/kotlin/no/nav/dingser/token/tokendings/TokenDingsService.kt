@@ -73,9 +73,9 @@ class TokenDingsService(
         }
 
     @KtorExperimentalAPI
-    suspend fun getToken(jwsToken: Jws, subjectToken: String?): AccessToken =
+    suspend fun getToken(jwsToken: Jws, subjectToken: String?) =
         handlerUtils.tryRequest("Making a Formdata Url-encoded Token request for TokenDings", tokenConfiguration.wellKnownMetadata.tokenEndpoint) {
-            val response = handlerUtils.defaultHttpClient.submitForm<AccessTokenResponse>(
+            handlerUtils.defaultHttpClient.submitForm<AccessTokenResponse>(
                 parametersOf(
                     PARAMS_CLIENT_ASSERTION to listOf(jwsToken.token),
                     PARAMS_CLIENT_ASSERTION_TYPE to listOf(CLIENT_ASSERTION_TYPE),
@@ -86,7 +86,6 @@ class TokenDingsService(
             ) {
                 url(tokenConfiguration.wellKnownMetadata.tokenEndpoint)
             }
-            AccessToken(response.accessToken)
         }
 
     fun bearerToken(accessToken: AccessToken) = "$BEARER $accessToken"
@@ -94,12 +93,12 @@ class TokenDingsService(
     @KtorExperimentalAPI
     suspend fun exchangeToken(principal: OAuthAccessTokenResponse.OAuth2?): String {
         // Try to exchange token with TokenDings
-        val jwsToken = createJws()
-        val accessToken = principal?.let {
-            getToken(jwsToken, it.accessToken)
-        }.also {
-            it ?: throw IllegalStateException("Could not get User token from Login")
+        val tokenResponse = principal?.let {
+            getToken(createJws(), it.accessToken)
         }
-        return bearerToken(accessToken!!)
+        log.info { "Tokendings Token Expires In: ${tokenResponse!!.expiresIn}\nIssued Token Type: ${tokenResponse.issuedTokenType}" }
+        return bearerToken(
+            AccessToken(tokenResponse!!.accessToken)
+        )
     }
 }

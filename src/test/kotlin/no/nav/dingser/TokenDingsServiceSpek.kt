@@ -24,6 +24,7 @@ import no.nav.dingser.mokk.wellknownStub
 import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.BEARER
 import no.nav.dingser.token.tokendings.TokenDingsService
+import no.nav.dingser.token.utils.AccessToken
 import no.nav.dingser.token.utils.AccessTokenResponse
 import no.nav.dingser.token.utils.TokenConfiguration
 import no.nav.dingser.token.utils.objectMapper
@@ -119,7 +120,7 @@ object TokenDingsServiceSpek : Spek({
                 val tokenExchanged = runBlocking {
                     tokenDingsService.getToken(jws, subjectToken = "")
                 }
-                val bearerToken = tokenDingsService.bearerToken(tokenExchanged)
+                val bearerToken = tokenDingsService.bearerToken(AccessToken(tokenExchanged.accessToken))
                 bearerToken.substringAfter("Bearer").trim() `should be equal to` accessTokenResponse.accessToken
             }
         }
@@ -130,12 +131,12 @@ object TokenDingsServiceSpek : Spek({
             applicationStatus = ApplicationStatus(),
             oauthSettings = OauthSettings(environment = environment, identityServerName = "identityTest"))
     }) {
-        describe("Get a token from Authz Endpoint") {
+        describe("Check redirect from idp provider") {
             with(handleRequest(
                 HttpMethod.Get, "/oauth"
             ) {
             }) {
-                context("Get token from MockIdporten") {
+                context("Get right url") {
                     assertEquals(302, response.status()?.value)
                     assertEquals(null, response.content)
                     assertEquals("http://localhost:8000/test/authorize?client_id=client_id&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth&scope=openid&state=****&response_type=code&response_mode=query", Regex("state=(\\w+)").replace(response.headers["Location"].toString(), "state=****"))
