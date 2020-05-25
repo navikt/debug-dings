@@ -12,6 +12,7 @@ spec:
       external:
         - host: oidc-ver2.difi.no
         - host: tokendings.dev-gcp.nais.io
+        - host: dings-validate.dev-gcp.nais.io
       rules:
         - application: dings-validate
   ingresses:

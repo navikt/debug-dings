@@ -98,6 +98,10 @@ data class Environment(
                 defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
             }
     }
+
+    data class DownstreamApi(
+        val url: String = config.getOrElse(Key("downstream.api.url", stringType), "http://dings-validate/hello")
+    )
 }
 
 internal fun String.readFile(): String? =
