@@ -40,10 +40,7 @@ private fun Routing.authCallback(oauthSettings: OauthSettings, environment: Envi
             get("/oauth") {
                 val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
                 call.respondText("Access Token = ${principal?.accessToken}")
-                val tokenDingsService = TokenDingsService(
-                    tokenConfiguration = oauthSettings.tokenDingsConfiguration,
-                    environment = environment
-                )
+                val tokenDingsService = TokenDingsService(environment.tokenDings)
                 val exchangedToken = tokenDingsService.exchangeToken(principal)
                 log.info { runBlocking { OutboundApiService(exchangedToken).getResponse() } }
             }

@@ -10,9 +10,9 @@ class OauthSettings(
     private val environment: Environment,
     var identityServerName: String = "IdentityServerDingser"
 ) {
-    val difiConfiguration = TokenConfiguration(wellknownUrl = environment.idporten.metadata)
+    val difiConfiguration = TokenConfiguration(wellknownUrl = environment.idporten.wellKnownUrl)
 
-    val tokenDingsConfiguration = TokenConfiguration(wellknownUrl = environment.tokenDings.metadata)
+    val tokenDingsConfiguration = TokenConfiguration(wellknownUrl = environment.tokenDings.wellKnownUrl)
 
     @KtorExperimentalAPI
     fun getOauthServerSettings() = OAuthServerSettings.OAuth2ServerSettings(

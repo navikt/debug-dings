@@ -74,6 +74,7 @@ dependencies {
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
     implementation ("io.ktor:ktor-client-apache:$ktorVersion")
     implementation ("io.ktor:ktor-client-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-freemarker:$ktorVersion")
 
     implementation ("com.natpryce:konfig:$konfigVersion")
 

@@ -11,7 +11,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.runBlocking
 import no.nav.dingser.config.Environment
 import no.nav.dingser.config.encodeBase64
 import no.nav.dingser.mokk.OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN
@@ -24,18 +23,15 @@ import no.nav.dingser.mokk.wellknownStub
 import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.BEARER
 import no.nav.dingser.token.tokendings.TokenDingsService
-import no.nav.dingser.token.utils.AccessToken
 import no.nav.dingser.token.utils.AccessTokenResponse
-import no.nav.dingser.token.utils.TokenConfiguration
 import no.nav.dingser.token.utils.objectMapper
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.OAuth2Config
-import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.text.ParseException
-import java.util.*
+import java.util.Date
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
@@ -68,9 +64,9 @@ object TokenDingsServiceSpek : Spek({
             "http://localhost:$DIFI_PORT/test$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
         ),
         tokenDings = Environment.TokenDings(
-            issuer = "cluster:namespace:app1",
+            clientId = "cluster:namespace:app1",
             audience = "cluster:namespace:app2",
-            metadata = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
+            wellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
             // jwksPublic = objectMapper.writeValueAsString(
             //    Keys(listOf(objectMapper.readValue(rsaKey.first.toPublicJWK().toJSONString())))),
             jwksPrivate = toJWKSet(rsaKey.first, isPublic = false)!!.toJSONString()
@@ -88,40 +84,27 @@ object TokenDingsServiceSpek : Spek({
         tokenType = BEARER
     )
 
-    val tokenConfigTokenDings = TokenConfiguration(environment.tokenDings.metadata)
-
-    val tokenDingsService = TokenDingsService(
-        environment = environment,
-        tokenConfiguration = tokenConfigTokenDings
-    )
+    val tokenDingsService = TokenDingsService(environment.tokenDings)
 
     describe("DIFI SERVICE, GET WellKnown Configuration and acquire Token") {
         context("Setup Stub to request Token from DIFI") {
             server.tokenDingsStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
-            val jws = tokenDingsService.createJws()
+            val jws = tokenDingsService.clientAssertion()
 
             it("Validate Created token") {
 
-                parseAndValidateSignatur(rsaKey = rsaKey.first, token = jws.token)
+                parseAndValidateSignatur(rsaKey = rsaKey.first, token = jws)
 
-                val parsedToken = SignedJWT.parse(jws.token)
+                val parsedToken = SignedJWT.parse(jws)
                 val body = parsedToken.jwtClaimsSet
                 val header = parsedToken.header
 
                 header.algorithm.name shouldBeEqualTo rsaKey.first.algorithm.name
                 header.keyID shouldBeEqualTo rsaKey.first.keyID
-                body.audience[0] shouldBeEqualTo tokenConfigTokenDings.wellKnownMetadata.tokenEndpoint
-                body.subject shouldBeEqualTo environment.tokenDings.issuer
-                body.issuer shouldBeEqualTo environment.tokenDings.issuer
+                body.audience[0] shouldBeEqualTo environment.tokenDings.metadata.tokenEndpoint
+                body.subject shouldBeEqualTo environment.tokenDings.clientId
+                body.issuer shouldBeEqualTo environment.tokenDings.clientId
                 body.expirationTime.after(Date()) shouldBeEqualTo true
-            }
-
-            it("Should return and serialize Token") {
-                val tokenExchanged = runBlocking {
-                    tokenDingsService.getToken(jws, subjectToken = "")
-                }
-                val bearerToken = tokenDingsService.bearerToken(AccessToken(tokenExchanged.accessToken))
-                bearerToken.substringAfter("Bearer").trim() `should be equal to` accessTokenResponse.accessToken
             }
         }
     }
@@ -129,7 +112,8 @@ object TokenDingsServiceSpek : Spek({
         setupHttpServer(
             environment = environment,
             applicationStatus = ApplicationStatus(),
-            oauthSettings = OauthSettings(environment = environment, identityServerName = "identityTest"))
+            oauthSettings = OauthSettings(environment = environment, identityServerName = "identityTest")
+        )
     }) {
         describe("Check redirect from idp provider") {
             with(handleRequest(
@@ -139,7 +123,12 @@ object TokenDingsServiceSpek : Spek({
                 context("Get right url") {
                     assertEquals(302, response.status()?.value)
                     assertEquals(null, response.content)
-                    assertEquals("http://localhost:8000/test/authorize?client_id=client_id&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth&scope=openid&state=****&response_type=code&response_mode=query", Regex("state=(\\w+)").replace(response.headers["Location"].toString(), "state=****"))
+                    assertEquals(
+                        "http://localhost:8000/test/authorize" +
+                            "?client_id=client_id&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth&scope=openid" +
+                            "&state=****&response_type=code&response_mode=query",
+                        Regex("state=(\\w+)").replace(response.headers["Location"].toString(), "state=****")
+                    )
                 }
             }
         }

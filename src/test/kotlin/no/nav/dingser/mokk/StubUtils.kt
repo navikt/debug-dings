@@ -43,7 +43,9 @@ fun WireMockServer.idportenStub(status: HttpStatusCode, body: String): StubMappi
 fun WireMockServer.tokenDingsStub(status: HttpStatusCode, body: String): StubMapping =
     stubFor(
         WireMock.post(WireMock.urlEqualTo(TOKEN_PATH))
-            .withRequestBody(WireMock.matching(".*(client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type).*"))
+            .withRequestBody(WireMock.matching(
+                ".*(client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3A" +
+                    "jwt-bearer&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type).*"))
             .withHeader(
                 HttpHeaders.ContentType,
                 WireMock.equalTo(ContentType.Application.FormUrlEncoded.withCharset(Charsets.UTF_8).toString())

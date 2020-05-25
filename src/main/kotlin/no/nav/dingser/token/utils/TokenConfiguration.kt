@@ -13,14 +13,13 @@ import mu.KotlinLogging
 private val log = KotlinLogging.logger { }
 
 class TokenConfiguration(
-    val wellknownUrl: String,
-    private val handlerUtils: HandlerUtils = HandlerUtils()
+    val wellknownUrl: String
 ) {
 
     @KtorExperimentalAPI
     val wellKnownMetadata: OauthServerConfigurationMetadata = runBlocking {
-        handlerUtils.tryRequest("Getting WellKnown configuration from: ", wellknownUrl) {
-            handlerUtils.defaultHttpClient.get<OauthServerConfigurationMetadata> {
+        withLog("Getting WellKnown configuration from: ", wellknownUrl) {
+            defaultHttpClient.get<OauthServerConfigurationMetadata> {
                 url(wellknownUrl)
                 accept(ContentType.Application.Json)
             }.also { log.info { "Got WellKnown config from: $it" } }
@@ -48,6 +47,6 @@ class AccessToken(val token: String) {
     override fun toString(): String = token
 }
 
-class Jws(val token: String) {
+class ClientAssertion(val token: String) {
     override fun toString(): String = token
 }
