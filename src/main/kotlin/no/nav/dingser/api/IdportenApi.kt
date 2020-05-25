@@ -29,15 +29,17 @@ fun Routing.idporten(
 }
 
 private fun Routing.generateToken() =
-    get("/") {
-        call.respondText("""Click <a href="/oauth">here</a> to get tokens""", ContentType.Text.Html)
+    route("/") {
+        get {
+            call.respondText("""Click <a href="/oauth">here</a> to get tokens""", ContentType.Text.Html)
+        }
     }
 
 @KtorExperimentalAPI
 private fun Routing.authCallback(oauthSettings: OauthSettings, environment: Environment) =
-    route("/") {
+    route("/oauth") {
         authenticate(oauthSettings.identityServerName) {
-            get("/oauth") {
+            get {
                 val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
                 call.respondText("Access Token = ${principal?.accessToken}")
                 val tokenDingsService = TokenDingsService(environment.tokenDings)
