@@ -2,12 +2,14 @@ package no.nav.dingser.authentication
 
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.auth0.jwt.interfaces.JWTVerifier
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.Authentication
 import io.ktor.auth.AuthenticationFailedCause
 import io.ktor.auth.AuthenticationPipeline
 import io.ktor.auth.AuthenticationProvider
 import io.ktor.auth.Principal
+import io.ktor.auth.principal
 import io.ktor.request.path
 import io.ktor.response.respondRedirect
 import mu.KotlinLogging
@@ -61,3 +63,5 @@ fun Authentication.Configuration.idToken(
 }
 
 data class IdTokenPrincipal(val decodedJWT: DecodedJWT) : Principal
+
+fun ApplicationCall.idTokenPrincipal(): IdTokenPrincipal? = this.principal()

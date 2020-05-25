@@ -48,13 +48,6 @@ fun createHttpServer(environment: Environment, applicationStatus: ApplicationSta
 @KtorExperimentalAPI
 fun Application.setupHttpServer(environment: Environment, applicationStatus: ApplicationStatus) {
 
-    /*install(Sessions) {
-        cookie<SignedJWT>("oauthSampleSessionId2") {
-            val secretSignKey = hex("000102030405060708090a0b0c0d0e0f") // @TODO: Remember to change this!
-            transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
-        }
-    }*/
-
     log.info { "Application Profile running: ${environment.application.profile}" }
     val idporten = environment.idporten
     install(Authentication) {

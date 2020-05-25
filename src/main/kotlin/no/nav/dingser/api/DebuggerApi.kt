@@ -15,6 +15,7 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.dingser.HttpException
 import no.nav.dingser.Jackson.defaultMapper
+import no.nav.dingser.authentication.idTokenPrincipal
 import no.nav.dingser.config.Environment
 import no.nav.dingser.token.tokendings.OAuth2TokenExchangeRequest
 import no.nav.dingser.token.tokendings.TokenDingsService
@@ -27,6 +28,8 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
     authenticate("cookie") {
         route("/debugger") {
             get {
+                val principal = checkNotNull(call.idTokenPrincipal())
+                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject) ?.accessToken ?: "error: could not get accesstoken from cache"
                 call.respond(
                     FreeMarkerContent(
                         "debugger.ftl",
@@ -37,7 +40,7 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
                             "grant_type" to "urn:ietf:params:oauth:grant-type:token-exchange",
                             "audience" to config.audience,
                             "subject_token_type" to "urn:ietf:params:oauth:token-type:jwt",
-                            "subject_token" to "<the token to exchange into a new one>"
+                            "subject_token" to subjectToken
                         )
                     )
                 )
