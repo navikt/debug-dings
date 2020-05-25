@@ -81,8 +81,8 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     log.info { "Installing routes" }
     install(Routing) {
         selfTest(readySelfTestCheck = { applicationStatus.initialized }, aLiveSelfTestCheck = { applicationStatus.running })
-        idporten(oauthSettings, environment)
         debuggerApi(oauthSettings, environment.tokenDings)
+        idporten(oauthSettings, environment)
     }
     applicationStatus.initialized = true
     log.info { "Application is up and running" }

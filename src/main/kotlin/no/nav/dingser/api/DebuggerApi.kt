@@ -12,6 +12,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.dingser.HttpException
 import no.nav.dingser.Jackson.defaultMapper
 import no.nav.dingser.config.Environment
@@ -22,6 +23,7 @@ import no.nav.dingser.token.tokendings.tokenExchange
 import no.nav.dingser.token.utils.defaultHttpClient
 import java.net.URI
 
+@KtorExperimentalAPI
 internal fun Routing.debuggerApi(oauthSettings: OauthSettings, config: Environment.TokenDings) {
     val tokenDingsService = TokenDingsService(config)
     authenticate(oauthSettings.identityServerName) {

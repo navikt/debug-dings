@@ -28,7 +28,7 @@ fun Routing.idporten(
 }
 
 private fun Routing.generateToken() =
-    get("/") {
+    get("/token") {
         call.respondText("""Click <a href="/oauth">here</a> to get tokens""", ContentType.Text.Html)
     }
 
