@@ -48,8 +48,8 @@ data class Environment(
             Key("tokendings.wellknown", stringType),
             "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"
         ),
-        val clientId: String = config.getOrElse(Key("tokendings.sub", stringType), "dev-gcp:plattformsikkerhet:dingser"),
-        val audience: String = config.getOrElse(Key("tokendings.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
+        val clientId: String = config.getOrElse(Key("nais.client.id", stringType), "cluster:namespace:app1"),
+        val audience: String = config.getOrElse(Key("client.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
         val jwksPrivate: String = "/var/run/secrets/jwks".readFile() ?: "jwks_private"
     ) {
         val metadata: OauthServerConfigurationMetadata =
