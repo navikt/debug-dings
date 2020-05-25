@@ -8,7 +8,6 @@ import io.ktor.http.ContentType
 import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
-import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -29,22 +28,18 @@ fun Routing.idporten(
 }
 
 private fun Routing.generateToken() =
-    route("/") {
-        get {
-            call.respondText("""Click <a href="/oauth">here</a> to get tokens""", ContentType.Text.Html)
-        }
+    get("/") {
+        call.respondText("""Click <a href="/oauth">here</a> to get tokens""", ContentType.Text.Html)
     }
 
 @KtorExperimentalAPI
 private fun Routing.authCallback(oauthSettings: OauthSettings, environment: Environment) =
-    route("/oauth") {
-        authenticate(oauthSettings.identityServerName) {
-            get {
-                val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
-                call.respondText("Access Token = ${principal?.accessToken}")
-                val tokenDingsService = TokenDingsService(environment.tokenDings)
-                val exchangedToken = tokenDingsService.exchangeToken(principal)
-                log.info { runBlocking { OutboundApiService(exchangedToken).getResponse() } }
-            }
+    authenticate(oauthSettings.identityServerName) {
+        get("/oauth") {
+            val principal = call.authentication.principal<OAuthAccessTokenResponse.OAuth2>()
+            call.respondText("Access Token = ${principal?.accessToken}")
+            val tokenDingsService = TokenDingsService(environment.tokenDings)
+            val exchangedToken = tokenDingsService.exchangeToken(principal)
+            log.info { runBlocking { OutboundApiService(exchangedToken).getResponse() } }
         }
     }
