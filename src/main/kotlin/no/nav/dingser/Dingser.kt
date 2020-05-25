@@ -5,7 +5,6 @@ import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
-import no.nav.dingser.token.OauthSettings
 
 private val log = KotlinLogging.logger { }
 
@@ -27,8 +26,7 @@ fun startServer() {
     runBlocking {
         val applicationStatus = AppConfiguration().applicationStatus
         val environment = AppConfiguration().environment
-        val oauthSettings = OauthSettings(environment = environment)
-        val dingserServer = createHttpServer(environment, applicationStatus, oauthSettings)
+        val dingserServer = createHttpServer(environment, applicationStatus)
 
         DefaultExports.initialize()
         Runtime.getRuntime().addShutdownHook(Thread {

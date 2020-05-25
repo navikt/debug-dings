@@ -15,8 +15,8 @@ import io.ktor.http.parametersOf
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
-import no.nav.dingser.token.utils.AccessToken
-import no.nav.dingser.token.utils.AccessTokenResponse
+import no.nav.dingser.token.AccessToken
+import no.nav.dingser.token.AccessTokenResponse
 import no.nav.dingser.token.utils.defaultHttpClient
 import no.nav.dingser.token.utils.withLog
 import java.time.Instant

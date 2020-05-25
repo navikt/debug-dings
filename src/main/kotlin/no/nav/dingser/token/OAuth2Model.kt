@@ -1,31 +1,10 @@
-package no.nav.dingser.token.utils
+package no.nav.dingser.token
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.ktor.client.request.accept
-import io.ktor.client.request.get
-import io.ktor.client.request.url
-import io.ktor.http.ContentType
-import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 
 private val log = KotlinLogging.logger { }
-
-class TokenConfiguration(
-    val wellknownUrl: String
-) {
-
-    @KtorExperimentalAPI
-    val wellKnownMetadata: OauthServerConfigurationMetadata = runBlocking {
-        withLog("Getting WellKnown configuration from: ", wellknownUrl) {
-            defaultHttpClient.get<OauthServerConfigurationMetadata> {
-                url(wellknownUrl)
-                accept(ContentType.Application.Json)
-            }.also { log.info { "Got WellKnown config from: $it" } }
-        }
-    }
-}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class OauthServerConfigurationMetadata(

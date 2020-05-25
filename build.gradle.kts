@@ -12,7 +12,7 @@ val konfigVersion = "1.6.10.0"
 
 // Oauth2
 val nimbusJoseVersion = "8.3"
-
+val caffeineVersion = "2.8.4"
 // Log
 val apacheCommonsVersion = "3.10"
 val logstashEncoderVersion = "6.3"
@@ -67,7 +67,7 @@ dependencies {
     implementation ("io.ktor:ktor-client-okhttp:$ktorVersion")
 
     implementation("io.ktor:ktor-auth:$ktorVersion")
-
+    implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
     implementation ("io.ktor:ktor-client-cio:$ktorVersion")
     implementation ("io.ktor:ktor-server-netty:$ktorVersion")
     implementation ("io.ktor:ktor-jackson:$ktorVersion")
@@ -76,6 +76,7 @@ dependencies {
     implementation ("io.ktor:ktor-client-jackson:$ktorVersion")
     implementation("io.ktor:ktor-freemarker:$ktorVersion")
 
+    implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
     implementation ("com.natpryce:konfig:$konfigVersion")
 
     implementation ("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")

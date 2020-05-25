@@ -12,82 +12,85 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.routing.route
 import no.nav.dingser.HttpException
 import no.nav.dingser.Jackson.defaultMapper
+import no.nav.dingser.authentication.idTokenPrincipal
 import no.nav.dingser.config.Environment
-import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.OAuth2TokenExchangeRequest
 import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.tokendings.tokenExchange
 import no.nav.dingser.token.utils.defaultHttpClient
 import java.net.URI
 
-@KtorExperimentalAPI
-internal fun Routing.debuggerApi(oauthSettings: OauthSettings, config: Environment.TokenDings) {
+internal fun Routing.debuggerApi(config: Environment.TokenDings) {
     val tokenDingsService = TokenDingsService(config)
-    authenticate(oauthSettings.identityServerName) {
-        get("/debugger") {
-            call.respond(
-                FreeMarkerContent(
-                    "debugger.ftl",
-                    mapOf(
-                        "tokendings_url" to config.metadata.tokenEndpoint,
-                        "client_assertion_type" to "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-                        "client_assertion" to tokenDingsService.clientAssertion(),
-                        "grant_type" to "urn:ietf:params:oauth:grant-type:token-exchange",
-                        "audience" to config.audience,
-                        "subject_token_type" to "urn:ietf:params:oauth:token-type:jwt",
-                        "subject_token" to "<the token to exchange into a new one>"
+    authenticate("cookie") {
+        route("/debugger") {
+            get {
+                val principal = checkNotNull(call.idTokenPrincipal())
+                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject) ?.accessToken ?: "error: could not get accesstoken from cache"
+                call.respond(
+                    FreeMarkerContent(
+                        "debugger.ftl",
+                        mapOf(
+                            "tokendings_url" to config.metadata.tokenEndpoint,
+                            "client_assertion_type" to "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                            "client_assertion" to tokenDingsService.clientAssertion(),
+                            "grant_type" to "urn:ietf:params:oauth:grant-type:token-exchange",
+                            "audience" to config.audience,
+                            "subject_token_type" to "urn:ietf:params:oauth:token-type:jwt",
+                            "subject_token" to subjectToken
+                        )
                     )
                 )
-            )
-        }
+            }
 
-        post("/debugger") {
-            val parameters = call.receiveParameters()
-            val url = parameters.require("tokendings_url")
-            val tokenRequest = parameters.toTokenExchangeRequest()
-            val tokenResponse = defaultHttpClient.tokenExchange(
-                url,
-                tokenRequest
-            )
-            call.respond(
-                FreeMarkerContent(
-                    "tokenresponse.ftl",
-                    mapOf(
-                        "token_request" to tokenRequest.toFormattedTokenRequest(),
-                        "token_response" to defaultMapper.writeValueAsString(tokenResponse),
-                        "api_url" to "URL for the API to call",
-                        "bearer_token" to tokenResponse.accessToken
+            post {
+                val parameters = call.receiveParameters()
+                val url = parameters.require("tokendings_url")
+                val tokenRequest = parameters.toTokenExchangeRequest()
+                val tokenResponse = defaultHttpClient.tokenExchange(
+                    url,
+                    tokenRequest
+                )
+                call.respond(
+                    FreeMarkerContent(
+                        "tokenresponse.ftl",
+                        mapOf(
+                            "token_request" to tokenRequest.toFormattedTokenRequest(),
+                            "token_response" to defaultMapper.writeValueAsString(tokenResponse),
+                            "api_url" to "URL for the API to call",
+                            "bearer_token" to tokenResponse.accessToken
+                        )
                     )
                 )
-            )
-        }
+            }
 
-        post("/call") {
-            val parameters = call.receiveParameters()
-            val url = parameters.require("api_url")
-            val bearerToken = parameters.require("bearer_token")
-            val formattedRequest: String =
-                """
+            post("/call") {
+                val parameters = call.receiveParameters()
+                val url = parameters.require("api_url")
+                val bearerToken = parameters.require("bearer_token")
+                val formattedRequest: String =
+                    """
                 GET /${url.let { URI(it).path }} HTTP/1.1
                 Authorization: Bearer $bearerToken
                 """.trimIndent()
 
-            val response: String = defaultHttpClient.get(url) {
-                header("Authorization", "Bearer $bearerToken")
-            }
+                val response: String = defaultHttpClient.get(url) {
+                    header("Authorization", "Bearer $bearerToken")
+                }
 
-            call.respond(
-                FreeMarkerContent(
-                    "apiresponse.ftl",
-                    mapOf(
-                        "api_request" to formattedRequest,
-                        "api_response" to response
+                call.respond(
+                    FreeMarkerContent(
+                        "apiresponse.ftl",
+                        mapOf(
+                            "api_request" to formattedRequest,
+                            "api_response" to response
+                        )
                     )
                 )
-            )
+            }
         }
     }
 }
