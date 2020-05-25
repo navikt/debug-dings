@@ -23,7 +23,8 @@ import no.nav.dingser.token.tokendings.tokenExchange
 import no.nav.dingser.token.utils.defaultHttpClient
 import java.net.URI
 
-internal fun Routing.debuggerApi(config: Environment.TokenDings) {
+internal fun Routing.debuggerApi(environment: Environment) {
+    val config = environment.tokenDings
     val tokenDingsService = TokenDingsService(config)
     authenticate("cookie") {
         route("/debugger") {
@@ -58,9 +59,9 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
                     FreeMarkerContent(
                         "tokenresponse.ftl",
                         mapOf(
-                            "token_request" to tokenRequest.toFormattedTokenRequest(url),
+                            "token_request" to tokenRequest.toFormattedTokenRequest(URI(url)),
                             "token_response" to defaultMapper.writeValueAsString(tokenResponse),
-                            "api_url" to "URL for the API to call",
+                            "api_url" to environment.downstreamApi.url,
                             "bearer_token" to tokenResponse.accessToken
                         )
                     )
@@ -73,10 +74,10 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
                 val bearerToken = parameters.require("bearer_token")
                 val formattedRequest: String =
                     """
-                GET ${url.path} HTTP/1.1
-                Host: ${url.host}
-                Authorization: Bearer $bearerToken
-                """.trimIndent()
+                    GET ${url.path} HTTP/1.1
+                    Host: ${url.host}
+                    Authorization: Bearer $bearerToken
+                    """.trimIndent()
 
                 val response: String = defaultHttpClient.get(url.toString()) {
                     header("Authorization", "Bearer $bearerToken")
@@ -99,12 +100,12 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
 fun Parameters.require(name: String): String =
     this[name] ?: throw HttpException(HttpStatusCode.BadRequest, "missing required param $name")
 
-fun OAuth2TokenExchangeRequest.toFormattedTokenRequest(url: String) {
-    val uri = URI(url)
-    "POST ${uri.path} HTTP/1.1\n" +
-        "Host: ${uri.host}\n"
-    "Content-Type: application/x-www-form-urlencoded\n\n" +
-        """
+fun OAuth2TokenExchangeRequest.toFormattedTokenRequest(uri: URI): String =
+    """
+    POST ${uri.path} HTTP/1.1
+    Host: ${uri.host}
+    Content-Type: application/x-www-form-urlencoded
+            
     client_assertion_type=$clientAssertionType&
     client_assertion=$clientAssertion&
     grant_type=$grantType&
@@ -112,7 +113,6 @@ fun OAuth2TokenExchangeRequest.toFormattedTokenRequest(url: String) {
     subject_token_type=$subjectTokenType&
     subject_token=$subjectToken&
     """.trimIndent()
-}
 
 fun Parameters.toTokenExchangeRequest(): OAuth2TokenExchangeRequest =
     OAuth2TokenExchangeRequest(

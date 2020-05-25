@@ -92,7 +92,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     install(Routing) {
         selfTest(readySelfTestCheck = { applicationStatus.initialized }, aLiveSelfTestCheck = { applicationStatus.running })
         login(environment)
-        debuggerApi(environment.tokenDings)
+        debuggerApi(environment)
     }
     applicationStatus.initialized = true
     log.info { "Application is up and running" }
