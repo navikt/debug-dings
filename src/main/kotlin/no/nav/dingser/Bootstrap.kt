@@ -51,14 +51,13 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     log.info { "Application Profile running: ${environment.application.profile}" }
     val idporten = environment.idporten
     install(Authentication) {
+
         oauth(idporten.oauth2ServerSettings.name) {
             client = HttpClient(CIO)
             providerLookup = { idporten.oauth2ServerSettings }
             urlProvider = { environment.application.redirectUrl }
-            /*skipWhen {
-                 call -> call.sessions.get<SignedJWT>() != null
-            }*/
         }
+
         idToken("cookie") {
             val jwkProvider = environment.idporten.jwkProvider
             cookieName = environment.login.idTokenCookie
