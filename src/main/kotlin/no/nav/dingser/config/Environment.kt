@@ -38,7 +38,8 @@ data class Environment(
     val application: Application = Application(),
     val login: Login = Login(),
     val idporten: Idporten = Idporten(),
-    val tokenDings: TokenDings = TokenDings()
+    val tokenDings: TokenDings = TokenDings(),
+    val downstreamApi: DownstreamApi = DownstreamApi()
 ) {
     data class Application(
         val profile: String = config.getOrElse(Key("application.profile", stringType), "TEST"),
@@ -100,7 +101,7 @@ data class Environment(
     }
 
     data class DownstreamApi(
-        val url: String = config.getOrElse(Key("downstream.api.url", stringType), "http://dings-validate/hello")
+        val url: String = config.getOrElse(Key("downstream.api.url", stringType), "https://dings-validate.dev-gcp.nais.io/hello")
     )
 }
 

@@ -29,7 +29,7 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
         route("/debugger") {
             get {
                 val principal = checkNotNull(call.idTokenPrincipal())
-                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject) ?.accessToken ?: "error: could not get accesstoken from cache"
+                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject)?.accessToken ?: "error: could not get accesstoken from cache"
                 call.respond(
                     FreeMarkerContent(
                         "debugger.ftl",
@@ -58,7 +58,7 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
                     FreeMarkerContent(
                         "tokenresponse.ftl",
                         mapOf(
-                            "token_request" to tokenRequest.toFormattedTokenRequest(),
+                            "token_request" to tokenRequest.toFormattedTokenRequest(url),
                             "token_response" to defaultMapper.writeValueAsString(tokenResponse),
                             "api_url" to "URL for the API to call",
                             "bearer_token" to tokenResponse.accessToken
@@ -69,15 +69,16 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
 
             post("/call") {
                 val parameters = call.receiveParameters()
-                val url = parameters.require("api_url")
+                val url = URI(parameters.require("api_url"))
                 val bearerToken = parameters.require("bearer_token")
                 val formattedRequest: String =
                     """
-                GET /${url.let { URI(it).path }} HTTP/1.1
+                GET ${url.path} HTTP/1.1
+                Host: ${url.host}
                 Authorization: Bearer $bearerToken
                 """.trimIndent()
 
-                val response: String = defaultHttpClient.get(url) {
+                val response: String = defaultHttpClient.get(url.toString()) {
                     header("Authorization", "Bearer $bearerToken")
                 }
 
@@ -98,9 +99,11 @@ internal fun Routing.debuggerApi(config: Environment.TokenDings) {
 fun Parameters.require(name: String): String =
     this[name] ?: throw HttpException(HttpStatusCode.BadRequest, "missing required param $name")
 
-fun OAuth2TokenExchangeRequest.toFormattedTokenRequest() =
-    "POST /token HTTP/1.1\n" +
-        "Content-Type: application/x-www-form-urlencoded\n\n" +
+fun OAuth2TokenExchangeRequest.toFormattedTokenRequest(url: String) {
+    val uri = URI(url)
+    "POST ${uri.path} HTTP/1.1\n" +
+        "Host: ${uri.host}\n"
+    "Content-Type: application/x-www-form-urlencoded\n\n" +
         """
     client_assertion_type=$clientAssertionType&
     client_assertion=$clientAssertion&
@@ -109,6 +112,7 @@ fun OAuth2TokenExchangeRequest.toFormattedTokenRequest() =
     subject_token_type=$subjectTokenType&
     subject_token=$subjectToken&
     """.trimIndent()
+}
 
 fun Parameters.toTokenExchangeRequest(): OAuth2TokenExchangeRequest =
     OAuth2TokenExchangeRequest(
