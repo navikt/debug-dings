@@ -15,6 +15,7 @@ import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
+import no.nav.dingser.token.OauthServerConfigurationMetadata
 
 private val log = KotlinLogging.logger { }
 

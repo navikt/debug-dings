@@ -16,16 +16,15 @@ import io.ktor.routing.route
 import no.nav.dingser.HttpException
 import no.nav.dingser.Jackson.defaultMapper
 import no.nav.dingser.config.Environment
-import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.OAuth2TokenExchangeRequest
 import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.tokendings.tokenExchange
 import no.nav.dingser.token.utils.defaultHttpClient
 import java.net.URI
 
-internal fun Routing.debuggerApi(oauthSettings: OauthSettings, config: Environment.TokenDings) {
+internal fun Routing.debuggerApi(config: Environment.TokenDings) {
     val tokenDingsService = TokenDingsService(config)
-    authenticate(oauthSettings.identityServerName) {
+    authenticate("cookie") {
         route("/debugger") {
             get {
                 call.respond(

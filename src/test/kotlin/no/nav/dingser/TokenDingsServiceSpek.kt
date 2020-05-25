@@ -20,10 +20,9 @@ import no.nav.dingser.mokk.generateRsaKey
 import no.nav.dingser.mokk.toJWKSet
 import no.nav.dingser.mokk.tokenDingsStub
 import no.nav.dingser.mokk.wellknownStub
-import no.nav.dingser.token.OauthSettings
 import no.nav.dingser.token.tokendings.BEARER
 import no.nav.dingser.token.tokendings.TokenDingsService
-import no.nav.dingser.token.utils.AccessTokenResponse
+import no.nav.dingser.token.AccessTokenResponse
 import no.nav.dingser.token.utils.objectMapper
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import no.nav.security.mock.oauth2.OAuth2Config
@@ -111,8 +110,7 @@ object TokenDingsServiceSpek : Spek({
     withTestApplication(moduleFunction = {
         setupHttpServer(
             environment = environment,
-            applicationStatus = ApplicationStatus(),
-            oauthSettings = OauthSettings(environment = environment, identityServerName = "identityTest")
+            applicationStatus = ApplicationStatus()
         )
     }) {
         describe("Check redirect from idp provider") {

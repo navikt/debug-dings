@@ -1,5 +1,6 @@
 package no.nav.dingser
 
+import com.auth0.jwt.JWT
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -25,39 +26,56 @@ import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dingser.api.debuggerApi
 import no.nav.dingser.api.exceptionHandler
-import no.nav.dingser.api.idporten
+import no.nav.dingser.api.idTokenVerifier
+import no.nav.dingser.api.login
 import no.nav.dingser.api.selfTest
+import no.nav.dingser.authentication.idToken
 import no.nav.dingser.config.Environment
-import no.nav.dingser.token.OauthSettings
 import org.slf4j.event.Level
 
 private val log = KotlinLogging.logger { }
 
 @KtorExperimentalAPI
-fun createHttpServer(environment: Environment, applicationStatus: ApplicationStatus, oauthSettings: OauthSettings): NettyApplicationEngine {
+fun createHttpServer(environment: Environment, applicationStatus: ApplicationStatus): NettyApplicationEngine {
     return embeddedServer(Netty, port = environment.application.port, module = {
         setupHttpServer(
             environment = environment,
-            applicationStatus = applicationStatus,
-            oauthSettings = oauthSettings
+            applicationStatus = applicationStatus
         )
     })
 }
 
 @KtorExperimentalAPI
-fun Application.setupHttpServer(environment: Environment, applicationStatus: ApplicationStatus, oauthSettings: OauthSettings) {
+fun Application.setupHttpServer(environment: Environment, applicationStatus: ApplicationStatus) {
+
+    /*install(Sessions) {
+        cookie<SignedJWT>("oauthSampleSessionId2") {
+            val secretSignKey = hex("000102030405060708090a0b0c0d0e0f") // @TODO: Remember to change this!
+            transform(SessionTransportTransformerMessageAuthentication(secretSignKey))
+        }
+    }*/
 
     log.info { "Application Profile running: ${environment.application.profile}" }
-    log.info { "Setup Authentication with Idp: ${oauthSettings.difiConfiguration.wellKnownMetadata.issuer}" }
-    log.info { "Installing Authentication Server Name: ${oauthSettings.identityServerName}" }
+    val idporten = environment.idporten
     install(Authentication) {
-        oauth(oauthSettings.identityServerName) {
-            // will handle the back channel requests to the token endpoint
+        oauth(idporten.oauth2ServerSettings.name) {
             client = HttpClient(CIO)
-            // client settings from before
-            providerLookup = { oauthSettings.getOauthServerSettings() }
-            // Where we receive the Authorization code
+            providerLookup = { idporten.oauth2ServerSettings }
             urlProvider = { environment.application.redirectUrl }
+            /*skipWhen {
+                 call -> call.sessions.get<SignedJWT>() != null
+            }*/
+        }
+        idToken("cookie") {
+            val jwkProvider = environment.idporten.jwkProvider
+            cookieName = environment.login.idTokenCookie
+            redirectUriCookieName = environment.login.redirectCookie
+            verifier = {
+                jwkProvider.get(JWT.decode(it).keyId).idTokenVerifier(
+                    environment.idporten.clientId,
+                    environment.idporten.metadata.issuer
+                )
+            }
         }
     }
 
@@ -81,8 +99,8 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     log.info { "Installing routes" }
     install(Routing) {
         selfTest(readySelfTestCheck = { applicationStatus.initialized }, aLiveSelfTestCheck = { applicationStatus.running })
-        idporten(oauthSettings, environment)
-        debuggerApi(oauthSettings, environment.tokenDings)
+        login(environment)
+        debuggerApi(environment.tokenDings)
     }
     applicationStatus.initialized = true
     log.info { "Application is up and running" }
