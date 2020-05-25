@@ -11,16 +11,15 @@ import no.nav.dingser.token.utils.withLog
 class OutboundApiService(
     private val accessToken: String
 ) {
-    private val outboundApp = "http://dings-validate/api/v1/token"
+
+    private val outboundApp = "http://dings-validate/hello"
 
     @KtorExperimentalAPI
     suspend fun getResponse() =
         withLog("Getting response from: ", outboundApp) {
-            defaultHttpClient.get<ApiResponse> {
+            defaultHttpClient.get<String> {
                 header(HttpHeaders.Authorization, accessToken)
                 url(outboundApp)
             }
         }
 }
-
-data class ApiResponse(val keys: String, val result: String)
