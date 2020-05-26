@@ -18,7 +18,6 @@ import no.nav.dingser.config.Environment
 import no.nav.dingser.token.AccessToken
 import no.nav.dingser.token.AccessTokenResponse
 import no.nav.dingser.token.utils.defaultHttpClient
-import no.nav.dingser.token.utils.withLog
 import java.time.Instant
 import java.util.Date
 import java.util.UUID
@@ -71,19 +70,17 @@ class TokenDingsService(
 }
 
 suspend fun HttpClient.tokenExchange(url: String, request: OAuth2TokenExchangeRequest) =
-    withLog("exchanging token with tokendings", url) {
-        this.submitForm<AccessTokenResponse>(
-            url = url,
-            formParameters = parametersOf(
-                PARAMS_CLIENT_ASSERTION to listOf(request.clientAssertion),
-                PARAMS_CLIENT_ASSERTION_TYPE to listOf(request.clientAssertionType),
-                PARAMS_GRANT_TYPE to listOf(request.grantType),
-                PARAMS_SUBJECT_TOKEN to listOf(request.subjectToken),
-                PARAMS_SUBJECT_TOKEN_TYPE to listOf(request.subjectTokenType),
-                PARAMS_AUDIENCE to listOf(request.audience)
-            )
+    this.submitForm<AccessTokenResponse>(
+        url = url,
+        formParameters = parametersOf(
+            PARAMS_CLIENT_ASSERTION to listOf(request.clientAssertion),
+            PARAMS_CLIENT_ASSERTION_TYPE to listOf(request.clientAssertionType),
+            PARAMS_GRANT_TYPE to listOf(request.grantType),
+            PARAMS_SUBJECT_TOKEN to listOf(request.subjectToken),
+            PARAMS_SUBJECT_TOKEN_TYPE to listOf(request.subjectTokenType),
+            PARAMS_AUDIENCE to listOf(request.audience)
         )
-    }
+    )
 
 fun clientAssertion(clientId: String, audience: String, rsaKey: RSAKey) =
     JWTClaimsSet.Builder()

@@ -2,8 +2,10 @@ package no.nav.dingser.api
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
+import io.ktor.client.features.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.readText
 import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
@@ -13,6 +15,7 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import mu.KotlinLogging
 import no.nav.dingser.HttpException
 import no.nav.dingser.Jackson.defaultMapper
 import no.nav.dingser.authentication.idTokenPrincipal
@@ -22,6 +25,8 @@ import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.tokendings.tokenExchange
 import no.nav.dingser.token.utils.defaultHttpClient
 import java.net.URI
+
+private val log = KotlinLogging.logger { }
 
 internal fun Routing.debuggerApi(environment: Environment) {
     val config = environment.tokenDings
@@ -51,21 +56,36 @@ internal fun Routing.debuggerApi(environment: Environment) {
                 val parameters = call.receiveParameters()
                 val url = parameters.require("tokendings_url")
                 val tokenRequest = parameters.toTokenExchangeRequest()
-                val tokenResponse = defaultHttpClient.tokenExchange(
-                    url,
-                    tokenRequest
-                )
-                call.respond(
-                    FreeMarkerContent(
-                        "tokenresponse.ftl",
-                        mapOf(
-                            "token_request" to tokenRequest.toFormattedTokenRequest(URI(url)),
-                            "token_response" to defaultMapper.writeValueAsString(tokenResponse),
-                            "api_url" to environment.downstreamApi.url,
-                            "bearer_token" to tokenResponse.accessToken
+                try {
+                    val tokenResponse = defaultHttpClient.tokenExchange(
+                        url,
+                        tokenRequest
+                    )
+                    call.respond(
+                        FreeMarkerContent(
+                            "tokenresponse.ftl",
+                            mapOf(
+                                "token_request" to tokenRequest.toFormattedTokenRequest(URI(url)),
+                                "token_response" to defaultMapper.writeValueAsString(tokenResponse),
+                                "api_url" to environment.downstreamApi.url,
+                                "bearer_token" to tokenResponse.accessToken
+                            )
                         )
                     )
-                )
+                } catch (e: Exception) {
+                    val error = e.formatException()
+                    call.respond(
+                        FreeMarkerContent(
+                            "tokenresponse.ftl",
+                            mapOf(
+                                "token_request" to tokenRequest.toFormattedTokenRequest(URI(url)),
+                                "token_response" to error,
+                                "api_url" to "N/A",
+                                "bearer_token" to "N/A"
+                            )
+                        )
+                    )
+                }
             }
 
             post("/call") {
@@ -78,22 +98,43 @@ internal fun Routing.debuggerApi(environment: Environment) {
                     Host: ${url.host}
                     Authorization: Bearer $bearerToken
                     """.trimIndent()
-
-                val response: String = defaultHttpClient.get(url.toString()) {
-                    header("Authorization", "Bearer $bearerToken")
-                }
-
-                call.respond(
-                    FreeMarkerContent(
-                        "apiresponse.ftl",
-                        mapOf(
-                            "api_request" to formattedRequest,
-                            "api_response" to response
+                try {
+                    val response: String = defaultHttpClient.get(url.toString()) {
+                        header("Authorization", "Bearer $bearerToken")
+                    }
+                    call.respond(
+                        FreeMarkerContent(
+                            "apiresponse.ftl",
+                            mapOf(
+                                "api_request" to formattedRequest,
+                                "api_response" to response
+                            )
                         )
                     )
-                )
+                } catch (e: Exception) {
+                    val error = e.formatException()
+                    call.respond(
+                        FreeMarkerContent(
+                            "apiresponse.ftl",
+                            mapOf(
+                                "api_request" to formattedRequest,
+                                "api_response" to error
+                            )
+                        )
+                    )
+                }
             }
         }
+    }
+}
+
+suspend fun Exception.formatException(): String {
+    log.error("caught exception: $message", this)
+    return if (this is ClientRequestException) {
+        "${response.status}\n\n" +
+        "${response.readText()}"
+    } else {
+        "$message"
     }
 }
 
