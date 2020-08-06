@@ -10,9 +10,9 @@ spec:
   accessPolicy:
     outbound:
       external:
-        - host: oidc-ver2.difi.no
-        - host: tokendings.dev-gcp.nais.io
-        - host: dings-validate.dev-gcp.nais.io
+      {{#each outbound-host}}
+        - host: "{{this}}"
+      {{/each}}
       rules:
         - application: dings-validate
   ingresses:
