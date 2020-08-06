@@ -1,15 +1,9 @@
-
-
-group = "no.nav"
-version = "0.0.1"
-
 // Common
 val kotlinVersion = "1.3.72"
 val ktorVersion = "1.3.2"
 val kotlinxVersion = "1.3.6"
 val jacksonVersion = "2.11.0"
 val konfigVersion = "1.6.10.0"
-
 // Oauth2
 val nimbusJoseVersion = "8.3"
 val caffeineVersion = "2.8.4"
@@ -19,7 +13,6 @@ val logstashEncoderVersion = "6.3"
 val logbackVersion = "1.2.3"
 val ioPrometheusVersion = "0.9.0"
 val kotlinloggingVersion = "1.7.9"
-
 // Test
 val spek = "2.0.8"
 val kluentVersion = "1.61"
@@ -41,7 +34,6 @@ repositories {
     jcenter()
     maven(url = "https://dl.bintray.com/kotlin/ktor")
     maven(url = "https://kotlin.bintray.com/kotlinx")
-    maven(url = "http://packages.confluent.io/maven/")
 }
 
 tasks {
@@ -91,6 +83,7 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
 
     implementation ("no.nav.security:mock-oauth2-server:0.1.33")
+    implementation ("no.nav.security:token-client-core:1.3.0")
 
     implementation ("io.prometheus:simpleclient_hotspot:$ioPrometheusVersion")
     implementation ("io.prometheus:simpleclient_common:$ioPrometheusVersion")
