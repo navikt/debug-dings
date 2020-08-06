@@ -26,6 +26,10 @@ internal val defaultHttpClient = HttpClient(CIO) {
     }
 }
 
+internal val objectMapper: ObjectMapper = ObjectMapper()
+    .registerKotlinModule()
+    .configure(SerializationFeature.INDENT_OUTPUT, true)
+
 internal suspend fun HttpClient.getOAuthServerConfigurationMetadata(url: String): OauthServerConfigurationMetadata =
     withLog("getting oauth server configuration metadata", url) {
         this.get<OauthServerConfigurationMetadata> {
@@ -36,17 +40,14 @@ internal suspend fun HttpClient.getOAuthServerConfigurationMetadata(url: String)
 
 internal suspend fun <T> withLog(callName: String, url: String, block: suspend () -> T): T {
     return try {
+        log.info { "$callName: $url" }
         block()
     } catch (e: Exception) {
         log.warn { "Something went wrong with request to url: $url " }
         if (e is ClientRequestException) {
             val responseMessage = e.response.readText()
-            log.warn { "$callName - Response: $responseMessage" }
+            log.error { "Error Response: $responseMessage" }
         }
         throw e
     }
 }
-
-internal val objectMapper: ObjectMapper = ObjectMapper()
-    .registerKotlinModule()
-    .configure(SerializationFeature.INDENT_OUTPUT, true)
