@@ -62,10 +62,15 @@ data class Environment(
         val clientId: String = config.getOrElse(Key("idporten.client.id", stringType), "client_id"),
         val clientSecret: String = config.getOrElse(Key("idporten.client.secret", stringType), "client_secret")
     ) {
-        val metadata: OauthServerConfigurationMetadata =
-            runBlocking {
-                defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
-            }
+        val metadata: OauthServerConfigurationMetadata = OauthServerConfigurationMetadata(
+            "",
+            "",
+            "https://test.com",
+            ""
+        )
+           // runBlocking {
+           //     defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
+           // }
         val jwkProvider: JwkProvider = JwkProviderBuilder(URL(metadata.jwksUri))
             .cached(10, 24, TimeUnit.HOURS)
             .rateLimited(10, 1, TimeUnit.MINUTES)
@@ -94,10 +99,15 @@ data class Environment(
         val audience: String = config.getOrElse(Key("client.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
         val jwksPrivate: String = "/var/run/secrets/jwks".readFile() ?: JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
     ) {
-        val metadata: OauthServerConfigurationMetadata =
-            runBlocking {
-                defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
-            }
+        val metadata: OauthServerConfigurationMetadata = OauthServerConfigurationMetadata(
+            "",
+            "",
+            "",
+            ""
+        )
+           // runBlocking {
+           //     defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
+           // }
     }
 
     data class DownstreamApi(
