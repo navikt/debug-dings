@@ -35,6 +35,8 @@ internal suspend fun HttpClient.getOAuthServerConfigurationMetadata(url: String)
         this.get<OauthServerConfigurationMetadata> {
             url(url)
             accept(ContentType.Application.Json)
+            log.info { this.url.host }
+            log.info { this.url.encodedPath }
         }.also { log.info { "Got WellKnown config from: $it" } }
     }
 
