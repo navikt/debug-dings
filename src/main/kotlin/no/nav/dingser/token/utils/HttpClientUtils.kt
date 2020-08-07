@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
@@ -20,7 +20,7 @@ import no.nav.dingser.token.OauthServerConfigurationMetadata
 private val log = KotlinLogging.logger { }
 
 @KtorExperimentalAPI
-internal val defaultHttpClient = HttpClient(Apache) {
+internal val defaultHttpClient = HttpClient(OkHttp) {
     install(JsonFeature) {
         serializer = JacksonSerializer { objectMapper }
     }
