@@ -82,12 +82,13 @@ dependencies {
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
 
-    implementation ("no.nav.security:mock-oauth2-server:0.1.33")
     implementation ("no.nav.security:token-client-core:1.3.0")
 
     implementation ("io.prometheus:simpleclient_hotspot:$ioPrometheusVersion")
     implementation ("io.prometheus:simpleclient_common:$ioPrometheusVersion")
     implementation ("io.github.microutils:kotlin-logging:$kotlinloggingVersion")
+
+    testImplementation ("no.nav.security:mock-oauth2-server:0.1.33")
 
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek") {
         exclude(group = "org.jetbrains.kotlin")
