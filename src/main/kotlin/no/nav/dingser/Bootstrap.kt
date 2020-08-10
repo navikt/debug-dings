@@ -71,7 +71,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
         }
     }
 
-    val logLevel = Level.INFO
+    val logLevel = Level.TRACE
     log.info { "Installing log level: $logLevel" }
     install(CallLogging) {
         level = logLevel
