@@ -82,7 +82,7 @@ dependencies {
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
 
-    implementation ("no.nav.security:token-client-core:1.3.0")
+    implementation ("no.nav.security:token-validation-core:1.3.0")
 
     implementation ("io.prometheus:simpleclient_hotspot:$ioPrometheusVersion")
     implementation ("io.prometheus:simpleclient_common:$ioPrometheusVersion")

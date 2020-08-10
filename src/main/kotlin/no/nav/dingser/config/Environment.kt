@@ -2,6 +2,7 @@ package no.nav.dingser.config
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
 import com.natpryce.konfig.EnvironmentVariables
@@ -19,6 +20,8 @@ import mu.KotlinLogging
 import no.nav.dingser.token.OauthServerConfigurationMetadata
 import no.nav.dingser.token.utils.defaultHttpClient
 import no.nav.dingser.token.utils.getOAuthServerConfigurationMetadata
+import no.nav.dingser.token.utils.objectMapper
+import no.nav.security.token.support.core.configuration.ProxyAwareResourceRetriever
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
@@ -62,6 +65,11 @@ data class Environment(
         val clientId: String = config.getOrElse(Key("idporten.client.id", stringType), "client_id"),
         val clientSecret: String = config.getOrElse(Key("idporten.client.secret", stringType), "client_secret")
     ) {
+
+        val testData: OauthServerConfigurationMetadata = runBlocking {
+            objectMapper.run { readValue<OauthServerConfigurationMetadata>(ProxyAwareResourceRetriever().retrieveResource(URL(wellKnownUrl)).content) }
+        }.also { log.info { this } }
+
         val metadata: OauthServerConfigurationMetadata =
             runBlocking {
                 defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
