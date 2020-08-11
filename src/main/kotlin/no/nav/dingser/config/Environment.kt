@@ -2,7 +2,6 @@ package no.nav.dingser.config
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.Fuel
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
@@ -21,7 +20,6 @@ import mu.KotlinLogging
 import no.nav.dingser.token.OauthServerConfigurationMetadata
 import no.nav.dingser.token.utils.defaultHttpClient
 import no.nav.dingser.token.utils.getOAuthServerConfigurationMetadata
-import no.nav.dingser.token.utils.objectMapper
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
@@ -67,7 +65,10 @@ data class Environment(
     ) {
 
         val testData = runBlocking {
-            objectMapper.readValue<OauthServerConfigurationMetadata>(Fuel.get(wellKnownUrl).response().second.data)
+            val result = Fuel.get(wellKnownUrl).response()
+            log.info { "Request: ${result.first}" }
+            log.info { "Response: ${result.second}" }
+            log.info { result.third.component2() }
         }
 
         val metadata: OauthServerConfigurationMetadata =
