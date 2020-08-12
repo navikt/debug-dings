@@ -42,6 +42,7 @@ data class Environment(
     val tokenDings: TokenDings = TokenDings(),
     val downstreamApi: DownstreamApi = DownstreamApi()
 ) {
+
     data class Application(
         val profile: String = config.getOrElse(Key("application.profile", stringType), "TEST"),
         val port: Int = config.getOrElse(Key("application.port", intType), 8080),
@@ -94,7 +95,7 @@ data class Environment(
         ),
         val clientId: String = config.getOrElse(Key("nais.client.id", stringType), "cluster:namespace:app1"),
         val audience: String = config.getOrElse(Key("client.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
-        val jwksPrivate: String = "/var/run/secrets/nais.io/jwker/jwks".readFile() ?: ""// JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
+        val jwksPrivate: String = "/var/run/secrets/nais.io/jwker/jwks".readFile() ?: JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
     ) {
         val metadata: OauthServerConfigurationMetadata =
             runBlocking {

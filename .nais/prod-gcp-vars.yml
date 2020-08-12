@@ -7,6 +7,12 @@ env:
     value: PROD
   - name: APPLICATION_REDIRECT_URL
     value: "https://dingser.prod-gcp.nais.io/oauth"
+  - name: IDPORTEN_WELLKNOWN
+    value: "https://oidc.difi.no/idporten-oidc-provider/.well-known/openid-configuration"
+  - name: TOKENDINGS_WELLKNOWN
+    value: "https://tokendings.prod-gcp.nais.io/.well-known/oauth-authorization-server"
+  - name: CLIENT_AUDIENCE
+    value: dev-prod:plattformsikkerhet:dings-validate
 replicas:
   min: 1
   max: 1
