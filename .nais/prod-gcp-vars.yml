@@ -13,6 +13,8 @@ env:
     value: "https://tokendings.prod-gcp.nais.io/.well-known/oauth-authorization-server"
   - name: CLIENT_AUDIENCE
     value: dev-prod:plattformsikkerhet:dings-validate
+  - name: DOWNTSTREAM_API_URL
+    value: "https://dings-validate.prod-gcp.nais.io/hello"
 replicas:
   min: 1
   max: 1
