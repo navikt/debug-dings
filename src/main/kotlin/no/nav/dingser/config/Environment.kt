@@ -94,7 +94,7 @@ data class Environment(
         ),
         val clientId: String = config.getOrElse(Key("nais.client.id", stringType), "cluster:namespace:app1"),
         val audience: String = config.getOrElse(Key("client.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
-        val jwksPrivate: String = "/var/run/secrets/jwks".readFile() ?: ""// JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
+        val jwksPrivate: String = "/var/run/secrets/nais.io/jwker".readFile() ?: ""// JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
     ) {
         val metadata: OauthServerConfigurationMetadata =
             runBlocking {
