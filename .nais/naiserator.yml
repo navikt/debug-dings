@@ -46,8 +46,6 @@ spec:
   cpuThresholdPercentage: 80
   envFrom:
     - secret: dingser-idporten
-  filesFrom:
-    - secret: dingser-secrets
   env:
   {{#each env}}
     - name: "{{this.name}}"
