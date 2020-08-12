@@ -64,13 +64,6 @@ data class Environment(
         val clientSecret: String = config.getOrElse(Key("idporten.client.secret", stringType), "client_secret")
     ) {
 
-        val testData = runBlocking {
-            val result = Fuel.get(wellKnownUrl).response()
-            log.info { "Request: ${result.first}" }
-            log.info { "Response: ${result.second}" }
-            log.info { result.third.component2() }
-        }
-
         val metadata: OauthServerConfigurationMetadata =
             runBlocking {
                 defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
