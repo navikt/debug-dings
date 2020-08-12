@@ -19,8 +19,8 @@ import no.nav.dingser.token.AccessToken
 import no.nav.dingser.token.AccessTokenResponse
 import no.nav.dingser.token.utils.defaultHttpClient
 import java.time.Instant
-import java.util.Date
 import java.util.UUID
+import java.util.Date
 
 private val log = KotlinLogging.logger { }
 
@@ -82,17 +82,20 @@ suspend fun HttpClient.tokenExchange(url: String, request: OAuth2TokenExchangeRe
         )
     )
 
-fun clientAssertion(clientId: String, audience: String, rsaKey: RSAKey) =
-    JWTClaimsSet.Builder()
+fun clientAssertion(clientId: String, audience: String, rsaKey: RSAKey): String {
+    val now = Date.from(Instant.now())
+    return JWTClaimsSet.Builder()
         .issuer(clientId)
         .subject(clientId)
         .audience(audience)
-        .issueTime(Date.from(Instant.now()))
+        .issueTime(now)
         .expirationTime(Date.from(Instant.now().plusSeconds(60)))
         .jwtID(UUID.randomUUID().toString())
+        .notBeforeTime(now)
         .build()
         .sign(rsaKey)
         .serialize()
+}
 
 internal fun JWTClaimsSet.sign(rsaKey: RSAKey): SignedJWT =
     SignedJWT(
