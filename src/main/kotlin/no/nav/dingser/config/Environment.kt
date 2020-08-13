@@ -2,7 +2,6 @@ package no.nav.dingser.config
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.github.kittinunf.fuel.Fuel
 import com.natpryce.konfig.Configuration
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
 import com.natpryce.konfig.EnvironmentVariables

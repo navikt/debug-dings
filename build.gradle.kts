@@ -2,22 +2,24 @@
 val kotlinVersion = "1.3.72"
 val ktorVersion = "1.3.2"
 val kotlinxVersion = "1.3.6"
-val jacksonVersion = "2.11.0"
+val jacksonVersion = "2.11.2"
 val konfigVersion = "1.6.10.0"
 // Oauth2
-val nimbusJoseVersion = "8.3"
-val caffeineVersion = "2.8.4"
+val nimbusOIDC = "8.19"
+val nimbusJoseVersion = "8.20"
+val caffeineVersion = "2.8.5"
 // Log
-val apacheCommonsVersion = "3.10"
-val logstashEncoderVersion = "6.3"
+val apacheCommonsVersion = "3.11"
+val logstashEncoderVersion = "6.4"
 val logbackVersion = "1.2.3"
 val ioPrometheusVersion = "0.9.0"
-val kotlinloggingVersion = "1.7.9"
+val kotlinloggingVersion = "1.8.3"
 // Test
-val spek = "2.0.8"
+val spek = "2.0.12"
 val kluentVersion = "1.61"
-val wiremockVersion = "2.26.3"
+val wiremockVersion = "2.27.1"
 val platformRunner = "1.5.1"
+val mockOauth = "0.1.34"
 
 val mainClassName = "no.nav.dingser.DingserKt"
 
@@ -25,8 +27,8 @@ plugins {
     kotlin("jvm") version "1.3.72"
     java
     id("org.jmailen.kotlinter") version "2.3.2"
-    id("com.github.ben-manes.versions") version "0.28.0"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("com.github.ben-manes.versions") version "0.29.0"
+    id("com.github.johnrengelman.shadow") version "6.0.0"
 }
 
 repositories {
@@ -55,9 +57,7 @@ dependencies {
     implementation (kotlin("stdlib"))
     implementation ("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
     implementation ("io.ktor:ktor-client-okhttp:$ktorVersion")
-
     implementation ("io.ktor:ktor-client-okhttp:$ktorVersion")
-
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
     implementation ("io.ktor:ktor-client-cio:$ktorVersion")
@@ -67,29 +67,20 @@ dependencies {
     implementation ("io.ktor:ktor-client-apache:$ktorVersion")
     implementation ("io.ktor:ktor-client-jackson:$ktorVersion")
     implementation("io.ktor:ktor-freemarker:$ktorVersion")
-
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
     implementation ("com.natpryce:konfig:$konfigVersion")
-
     implementation ("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation ("org.apache.commons:commons-lang3:$apacheCommonsVersion")
-
-    // Bruk Nimbus
     implementation ("com.nimbusds:nimbus-jose-jwt:$nimbusJoseVersion")
-    implementation("com.nimbusds:oauth2-oidc-sdk:${nimbusJoseVersion}")
-
+    implementation("com.nimbusds:oauth2-oidc-sdk:${nimbusOIDC}")
     implementation ("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation ("ch.qos.logback:logback-classic:$logbackVersion")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion")
-
-    implementation ("com.github.kittinunf.fuel:fuel:2.2.3")
-
     implementation ("io.prometheus:simpleclient_hotspot:$ioPrometheusVersion")
     implementation ("io.prometheus:simpleclient_common:$ioPrometheusVersion")
     implementation ("io.github.microutils:kotlin-logging:$kotlinloggingVersion")
 
-    testImplementation ("no.nav.security:mock-oauth2-server:0.1.33")
-
+    testImplementation ("no.nav.security:mock-oauth2-server:$mockOauth")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek") {
         exclude(group = "org.jetbrains.kotlin")
     }
