@@ -22,3 +22,4 @@ outbound-host:
   - oidc.difi.no
   - tokendings.prod-gcp.nais.io
   - dings-validate.prod-gcp.nais.io
+  - dings-onprem-test.prod.adeo.no
