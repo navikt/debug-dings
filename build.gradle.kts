@@ -51,6 +51,11 @@ tasks {
         }
         testLogging.events("passed", "skipped", "failed")
     }
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "13"
+        }
+    }
 }
 
 dependencies {
