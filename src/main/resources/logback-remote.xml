@@ -10,9 +10,9 @@
     </appender>
 
     <logger name="no.nav" level="DEBUG"/>
-    <logger name="ktor.application" level="TRACE"/>
+    <logger name="ktor.application" level="DEBUG"/>
 
-    <root level="TRACE">
+    <root level="INFO">
         <appender-ref ref="stdout_json"/>
     </root>
 </configuration>

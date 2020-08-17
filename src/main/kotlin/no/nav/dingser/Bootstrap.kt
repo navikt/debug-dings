@@ -75,7 +75,7 @@ fun Application.setupHttpServer(environment: Environment, applicationStatus: App
     log.info { "Installing log level: $logLevel" }
     install(CallLogging) {
         level = logLevel
-        filter { call -> call.request.path().startsWith("/") }
+        filter { call -> call.request.path().startsWith("/debugger") }
     }
     log.info { "Installing Api-Exception handler" }
     install(StatusPages) {
