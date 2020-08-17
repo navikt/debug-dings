@@ -93,7 +93,8 @@ data class Environment(
             "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"
         ),
         val clientId: String = config.getOrElse(Key("nais.client.id", stringType), "cluster:namespace:app1"),
-        val audience: String = config.getOrElse(Key("client.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
+        val gcpAudience: String = config.getOrElse(Key("client.gcp.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
+        val onpremAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:dings-onprem-test"),
         val jwksPrivate: String = "/var/run/secrets/nais.io/jwker/jwks".readFile() ?: JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
     ) {
         val metadata: OauthServerConfigurationMetadata =
@@ -103,7 +104,8 @@ data class Environment(
     }
 
     data class DownstreamApi(
-        val url: String = config.getOrElse(Key("downstream.api.url", stringType), "https://dings-validate.dev-gcp.nais.io/hello")
+        val gcpApiUrl: String = config.getOrElse(Key("downstream.gcp.api.url", stringType), "https://dings-validate.dev-gcp.nais.io/hello"),
+        val onpremApiUrl: String = config.getOrElse(Key("downstream.onprem.api.url", stringType), "https://dings-onprem-test.dev.adeo.no/hello")
     )
 }
 

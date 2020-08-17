@@ -64,7 +64,7 @@ object TokenDingsServiceSpek : Spek({
         ),
         tokenDings = Environment.TokenDings(
             clientId = "cluster:namespace:app1",
-            audience = "cluster:namespace:app2",
+            gcpAudience = "cluster:namespace:app2",
             wellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
             // jwksPublic = objectMapper.writeValueAsString(
             //    Keys(listOf(objectMapper.readValue(rsaKey.first.toPublicJWK().toJSONString())))),

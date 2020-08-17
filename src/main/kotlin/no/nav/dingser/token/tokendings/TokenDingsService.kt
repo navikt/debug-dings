@@ -8,16 +8,13 @@ import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import io.ktor.auth.OAuthAccessTokenResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.submitForm
 import io.ktor.http.parametersOf
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dingser.config.Environment
-import no.nav.dingser.token.AccessToken
 import no.nav.dingser.token.AccessTokenResponse
-import no.nav.dingser.token.utils.defaultHttpClient
 import java.time.Instant
 import java.util.UUID
 import java.util.Date
@@ -45,27 +42,6 @@ class TokenDingsService(
         log.info { "Getting Keys with keyIDs: ${JWKSet.parse(tokenDingsConfig.jwksPrivate).keys.map { it.keyID }}" }
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
         return clientAssertion(tokenDingsConfig.clientId, tokenDingsConfig.metadata.tokenEndpoint, jwkToRSA)
-    }
-
-    fun bearerToken(accessToken: AccessToken) = "$BEARER $accessToken"
-
-    @KtorExperimentalAPI
-    suspend fun exchangeToken(principal: OAuthAccessTokenResponse.OAuth2?): String {
-        // Try to exchange token with TokenDings
-        val tokenResponse = principal?.let {
-            defaultHttpClient.tokenExchange(
-                tokenDingsConfig.metadata.tokenEndpoint,
-                OAuth2TokenExchangeRequest(
-                    clientAssertion(),
-                    it.accessToken,
-                    tokenDingsConfig.audience
-                )
-            )
-        }
-        log.info { "Tokendings Token Expires In: ${tokenResponse!!.expiresIn}\nIssued Token Type: ${tokenResponse.issuedTokenType}" }
-        return bearerToken(
-            AccessToken(tokenResponse!!.accessToken)
-        )
     }
 }
 

@@ -11,10 +11,14 @@ env:
     value: "https://oidc.difi.no/idporten-oidc-provider/.well-known/openid-configuration"
   - name: TOKENDINGS_WELLKNOWN
     value: "https://tokendings.prod-gcp.nais.io/.well-known/oauth-authorization-server"
-  - name: CLIENT_AUDIENCE
+  - name: CLIENT_GCP_AUDIENCE
     value: prod-gcp:plattformsikkerhet:dings-validate
-  - name: DOWNTSTREAM_API_URL
+  - name: CLIENT_ONPREM_AUDIENCE
+    value: prod-fss:plattformsikkerhet:dings-onprem-test
+  - name: DOWNTSTREAM_GCP_API_URL
     value: "https://dings-validate.prod-gcp.nais.io/hello"
+  - name: DOWNTSTREAM_ONPREM_API_URL
+    value: "https://dings-onprem-test.adeo.no/hello"
 replicas:
   min: 1
   max: 1
@@ -22,4 +26,4 @@ outbound-host:
   - oidc.difi.no
   - tokendings.prod-gcp.nais.io
   - dings-validate.prod-gcp.nais.io
-  - dings-onprem-test.prod.adeo.no
+  - dings-onprem-test.adeo.no

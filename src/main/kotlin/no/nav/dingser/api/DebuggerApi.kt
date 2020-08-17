@@ -20,6 +20,7 @@ import no.nav.dingser.HttpException
 import no.nav.dingser.Jackson.defaultMapper
 import no.nav.dingser.authentication.idTokenPrincipal
 import no.nav.dingser.config.Environment
+import no.nav.dingser.service.DowntreamApiService
 import no.nav.dingser.token.tokendings.OAuth2TokenExchangeRequest
 import no.nav.dingser.token.tokendings.TokenDingsService
 import no.nav.dingser.token.tokendings.tokenExchange
@@ -31,10 +32,12 @@ private val log = KotlinLogging.logger { }
 internal fun Routing.debuggerApi(environment: Environment) {
     val config = environment.tokenDings
     val tokenDingsService = TokenDingsService(config)
+    val apiService = DowntreamApiService(config)
     authenticate("cookie") {
         route("/debugger") {
             get {
                 val principal = checkNotNull(call.idTokenPrincipal())
+                apiService.isOnPrem = call.request.headers.contains("onprem")
                 val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject)?.accessToken ?: "error: could not get accesstoken from cache"
                 call.respond(
                     FreeMarkerContent(
@@ -44,7 +47,7 @@ internal fun Routing.debuggerApi(environment: Environment) {
                             "client_assertion_type" to "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
                             "client_assertion" to tokenDingsService.clientAssertion(),
                             "grant_type" to "urn:ietf:params:oauth:grant-type:token-exchange",
-                            "audience" to config.audience,
+                            "audience" to apiService.audience(),
                             "subject_token_type" to "urn:ietf:params:oauth:token-type:jwt",
                             "subject_token" to subjectToken
                         )
@@ -54,6 +57,7 @@ internal fun Routing.debuggerApi(environment: Environment) {
 
             post {
                 val parameters = call.receiveParameters()
+                val apiConfig = environment.downstreamApi
                 val url = parameters.require("tokendings_url")
                 val tokenRequest = parameters.toTokenExchangeRequest()
                 try {
@@ -67,7 +71,7 @@ internal fun Routing.debuggerApi(environment: Environment) {
                             mapOf(
                                 "token_request" to tokenRequest.toFormattedTokenRequest(URI(url)),
                                 "token_response" to defaultMapper.writeValueAsString(tokenResponse),
-                                "api_url" to environment.downstreamApi.url,
+                                "api_url" to if (apiService.isOnPrem) apiConfig.onpremApiUrl else apiConfig.gcpApiUrl,
                                 "bearer_token" to tokenResponse.accessToken
                             )
                         )
@@ -132,7 +136,7 @@ suspend fun Exception.formatException(): String {
     log.error("caught exception: $message", this)
     return if (this is ClientRequestException) {
         "${response.status}\n\n" +
-        "${response.readText()}"
+            "${response.readText()}"
     } else {
         "$message"
     }
