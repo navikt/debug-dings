@@ -15,9 +15,9 @@ env:
     value: prod-gcp:plattformsikkerhet:dings-validate
   - name: CLIENT_ONPREM_AUDIENCE
     value: prod-fss:plattformsikkerhet:dings-onprem-test
-  - name: DOWNTSTREAM_GCP_API_URL
+  - name: DOWNSTREAM_GCP_API_URL
     value: "https://dings-validate.prod-gcp.nais.io/hello"
-  - name: DOWNTSTREAM_ONPREM_API_URL
+  - name: DOWNSTREAM_ONPREM_API_URL
     value: "https://dings-onprem-test.adeo.no/hello"
 replicas:
   min: 1
