@@ -1,4 +1,4 @@
-package no.nav.dingser.api
+package no.nav.dings.api
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
@@ -16,15 +16,15 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
-import no.nav.dingser.HttpException
-import no.nav.dingser.Jackson.defaultMapper
-import no.nav.dingser.authentication.idTokenPrincipal
-import no.nav.dingser.config.Environment
-import no.nav.dingser.service.DowntreamApiService
-import no.nav.dingser.token.tokendings.OAuth2TokenExchangeRequest
-import no.nav.dingser.token.tokendings.TokenDingsService
-import no.nav.dingser.token.tokendings.tokenExchange
-import no.nav.dingser.token.utils.defaultHttpClient
+import no.nav.dings.HttpException
+import no.nav.dings.Jackson.defaultMapper
+import no.nav.dings.authentication.idTokenPrincipal
+import no.nav.dings.config.Environment
+import no.nav.dings.service.DowntreamApiService
+import no.nav.dings.token.tokendings.OAuth2TokenExchangeRequest
+import no.nav.dings.token.tokendings.TokenDingsService
+import no.nav.dings.token.tokendings.tokenExchange
+import no.nav.dings.token.utils.defaultHttpClient
 import java.net.URI
 
 private val log = KotlinLogging.logger { }

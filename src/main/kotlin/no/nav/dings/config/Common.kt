@@ -1,4 +1,4 @@
-package no.nav.dingser.config
+package no.nav.dings.config
 
 import io.ktor.http.ContentType
 import java.util.Base64

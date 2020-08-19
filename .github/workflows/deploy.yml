@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/dingser:${{ github.sha }}
+  IMAGE: docker.pkg.github.com/${{ github.repository }}/debug-dings:${{ github.sha }}
 
 jobs:
   build:

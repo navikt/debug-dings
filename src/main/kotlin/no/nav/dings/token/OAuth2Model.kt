@@ -1,4 +1,4 @@
-package no.nav.dingser.token
+package no.nav.dings.token
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty

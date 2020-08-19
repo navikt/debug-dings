@@ -1,4 +1,4 @@
-package no.nav.dingser
+package no.nav.dings
 
 import com.auth0.jwt.JWT
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -24,13 +24,13 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import no.nav.dingser.api.debuggerApi
-import no.nav.dingser.api.exceptionHandler
-import no.nav.dingser.api.idTokenVerifier
-import no.nav.dingser.api.login
-import no.nav.dingser.api.selfTest
-import no.nav.dingser.authentication.idToken
-import no.nav.dingser.config.Environment
+import no.nav.dings.api.debuggerApi
+import no.nav.dings.api.exceptionHandler
+import no.nav.dings.api.idTokenVerifier
+import no.nav.dings.api.login
+import no.nav.dings.api.selfTest
+import no.nav.dings.authentication.idToken
+import no.nav.dings.config.Environment
 import org.slf4j.event.Level
 
 private val log = KotlinLogging.logger { }

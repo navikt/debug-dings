@@ -1,4 +1,4 @@
-package no.nav.dingser.token.tokendings
+package no.nav.dings.token.tokendings
 
 import com.nimbusds.jose.JOSEObjectType
 import com.nimbusds.jose.JWSAlgorithm
@@ -13,8 +13,8 @@ import io.ktor.client.request.forms.submitForm
 import io.ktor.http.parametersOf
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import no.nav.dingser.config.Environment
-import no.nav.dingser.token.AccessTokenResponse
+import no.nav.dings.config.Environment
+import no.nav.dings.token.AccessTokenResponse
 import java.time.Instant
 import java.util.UUID
 import java.util.Date

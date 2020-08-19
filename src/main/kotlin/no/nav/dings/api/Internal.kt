@@ -1,4 +1,4 @@
-package no.nav.dingser.api
+package no.nav.dings.api
 
 import io.ktor.application.call
 import io.ktor.http.ContentType
@@ -9,9 +9,9 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
-import no.nav.dingser.config.IS_ALIVE
-import no.nav.dingser.config.IS_READY
-import no.nav.dingser.config.PROMETHEUS
+import no.nav.dings.config.IS_ALIVE
+import no.nav.dings.config.IS_READY
+import no.nav.dings.config.PROMETHEUS
 
 val collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 

@@ -1,10 +1,10 @@
-package no.nav.dingser
+package no.nav.dings
 
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import no.nav.dingser.config.Environment
+import no.nav.dings.config.Environment
 
 private val log = KotlinLogging.logger { }
 
@@ -26,7 +26,7 @@ fun startServer() {
     runBlocking {
         val applicationStatus = AppConfiguration().applicationStatus
         val environment = AppConfiguration().environment
-        val dingserServer = createHttpServer(environment, applicationStatus)
+        val dingsServer = createHttpServer(environment, applicationStatus)
 
         DefaultExports.initialize()
         Runtime.getRuntime().addShutdownHook(Thread {
@@ -34,9 +34,9 @@ fun startServer() {
                 log.info { "Shutdown hook called, shutting down gracefully" }
                 applicationStatus.initialized = false
                 applicationStatus.running = false
-                dingserServer.stop(1, 5)
+                dingsServer.stop(1, 5)
             }
         })
-        dingserServer.start(wait = true)
+        dingsServer.start(wait = true)
     }
 }

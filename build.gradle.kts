@@ -21,7 +21,7 @@ val wiremockVersion = "2.27.1"
 val platformRunner = "1.5.1"
 val mockOauth = "0.1.34"
 
-val mainClassName = "no.nav.dingser.DingserKt"
+val mainClassName = "no.nav.dings.DebugKt"
 
 plugins {
     kotlin("jvm") version "1.3.72"

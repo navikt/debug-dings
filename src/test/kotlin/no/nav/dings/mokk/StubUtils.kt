@@ -1,4 +1,4 @@
-package no.nav.dingser.mokk
+package no.nav.dings.mokk
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
@@ -17,8 +17,8 @@ import java.security.PrivateKey
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.UUID
-import no.nav.dingser.config.APPLICATION_JSON
-import no.nav.dingser.token.utils.objectMapper
+import no.nav.dings.config.APPLICATION_JSON
+import no.nav.dings.token.utils.objectMapper
 
 internal const val TOKEN_PATH = "/token"
 const val OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN = "/.well-known/openid-configuration"

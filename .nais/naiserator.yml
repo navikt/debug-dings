@@ -1,7 +1,7 @@
 kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
-  name: dingser
+  name: debug-dings
   namespace: {{namespace}}
   labels:
     team: {{team}}
@@ -14,7 +14,7 @@ spec:
         - host: "{{this}}"
       {{/each}}
       rules:
-        - application: dings-validate
+        - application: api-dings
   ingresses:
     {{#each ingresses}}
       - "{{this}}"

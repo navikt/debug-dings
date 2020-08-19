@@ -1,6 +1,6 @@
-package no.nav.dingser
+package no.nav.dings
 
-import no.nav.dingser.config.Environment
+import no.nav.dings.config.Environment
 
 fun main() {
     createHttpServer(

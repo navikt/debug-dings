@@ -1,4 +1,4 @@
-package no.nav.dingser.api
+package no.nav.dings.api
 
 import com.auth0.jwk.Jwk
 import com.auth0.jwt.JWT
@@ -19,7 +19,7 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import no.nav.dingser.config.Environment
+import no.nav.dings.config.Environment
 import java.security.interfaces.RSAPublicKey
 import java.util.concurrent.TimeUnit
 

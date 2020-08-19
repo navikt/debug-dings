@@ -1,4 +1,4 @@
-package no.nav.dingser.token.utils
+package no.nav.dings.token.utils
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -15,7 +15,7 @@ import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import no.nav.dingser.token.OauthServerConfigurationMetadata
+import no.nav.dings.token.OauthServerConfigurationMetadata
 
 private val log = KotlinLogging.logger { }
 
@@ -35,8 +35,6 @@ internal suspend fun HttpClient.getOAuthServerConfigurationMetadata(url: String)
         this.get<OauthServerConfigurationMetadata> {
             url(url)
             accept(ContentType.Application.Json)
-            log.info { this.url.host }
-            log.info { this.url.encodedPath }
         }.also { log.info { "Got WellKnown config from: $it" } }
     }
 

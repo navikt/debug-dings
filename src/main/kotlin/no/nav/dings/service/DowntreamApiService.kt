@@ -1,6 +1,6 @@
-package no.nav.dingser.service
+package no.nav.dings.service
 
-import no.nav.dingser.config.Environment
+import no.nav.dings.config.Environment
 
 class DowntreamApiService(
     private val config: Environment.TokenDings

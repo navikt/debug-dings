@@ -1,4 +1,4 @@
-package no.nav.dingser
+package no.nav.dings
 
 import io.ktor.http.HttpStatusCode
 

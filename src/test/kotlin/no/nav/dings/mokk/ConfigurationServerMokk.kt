@@ -1,4 +1,4 @@
-package no.nav.dingser.mokk
+package no.nav.dings.mokk
 
 data class ConfigurationServerMokk(
     var issuer: String,

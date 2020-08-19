@@ -1,4 +1,4 @@
-package no.nav.dingser.config
+package no.nav.dings.config
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
@@ -15,10 +15,9 @@ import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.auth.OAuthServerSettings
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
-import no.nav.dingser.token.OauthServerConfigurationMetadata
-import no.nav.dingser.token.utils.defaultHttpClient
-import no.nav.dingser.token.utils.getOAuthServerConfigurationMetadata
+import no.nav.dings.token.OauthServerConfigurationMetadata
+import no.nav.dings.token.utils.defaultHttpClient
+import no.nav.dings.token.utils.getOAuthServerConfigurationMetadata
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.URL
@@ -27,8 +26,6 @@ import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-
-private val log = KotlinLogging.logger { }
 
 private val config: Configuration =
     systemProperties() overriding
@@ -93,8 +90,8 @@ data class Environment(
             "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"
         ),
         val clientId: String = config.getOrElse(Key("nais.client.id", stringType), "cluster:namespace:app1"),
-        val gcpAudience: String = config.getOrElse(Key("client.gcp.audience", stringType), "dev-gcp:plattformsikkerhet:dings-validate"),
-        val onpremAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:dings-onprem-test"),
+        val gcpAudience: String = config.getOrElse(Key("client.gcp.audience", stringType), "dev-gcp:plattformsikkerhet:api-dings"),
+        val onpremAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:api-dings"),
         val jwksPrivate: String = "/var/run/secrets/nais.io/jwker/jwks".readFile() ?: JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
     ) {
         val metadata: OauthServerConfigurationMetadata =
@@ -104,8 +101,8 @@ data class Environment(
     }
 
     data class DownstreamApi(
-        val gcpApiUrl: String = config.getOrElse(Key("downstream.gcp.api.url", stringType), "https://dings-validate.dev-gcp.nais.io/hello"),
-        val onpremApiUrl: String = config.getOrElse(Key("downstream.onprem.api.url", stringType), "https://dings-onprem-test.dev.adeo.no/hello")
+        val gcpApiUrl: String = config.getOrElse(Key("downstream.gcp.api.url", stringType), "https://api-dings.dev-gcp.nais.io/hello"),
+        val onpremApiUrl: String = config.getOrElse(Key("downstream.onprem.api.url", stringType), "https://api-dings.dev-fss-pub.nais.io/hello")
     )
 }
 
