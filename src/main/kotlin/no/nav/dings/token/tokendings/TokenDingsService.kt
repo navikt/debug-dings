@@ -35,7 +35,8 @@ internal const val BEARER = "Bearer"
 class TokenDingsService(
     private val tokenDingsConfig: Environment.TokenDings
 ) {
-    private val jwkToRSA = JWKSet.parse(tokenDingsConfig.jwksPrivate).keys[0].toRSAKey()
+    private val jwkToRSA = RSAKey.parse(tokenDingsConfig.jwksPrivate)
+    //JWKSet.parse(tokenDingsConfig.jwksPrivate).keys[0].toRSAKey()
 
     @KtorExperimentalAPI
     fun clientAssertion(): String {
