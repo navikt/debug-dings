@@ -17,7 +17,7 @@ spec:
         - application: api-dings
         - application: api-dings
           namespace: {{namespace}}
-          cluset: {{fss-cluster}
+          cluset: {{fss-cluster}}
   ingresses:
     {{#each ingresses}}
       - "{{this}}"
