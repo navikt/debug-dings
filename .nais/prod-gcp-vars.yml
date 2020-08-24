@@ -27,3 +27,4 @@ outbound-host:
   - tokendings.prod-gcp.nais.io
   - api-dings.prod-gcp.nais.io
   - api-dings.prod-fss-pub.nais.io
+fss-cluster: prod-fss

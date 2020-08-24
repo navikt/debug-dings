@@ -15,3 +15,4 @@ outbound-host:
   - tokendings.dev-gcp.nais.io
   - api-dings.dev-gcp.nais.io
   - api-dings.dev-fss-pub.nais.io
+fss-cluster: dev-fss

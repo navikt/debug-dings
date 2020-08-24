@@ -15,6 +15,9 @@ spec:
       {{/each}}
       rules:
         - application: api-dings
+        - application: api-dings
+          namespace: {{namespace}}
+          cluset: {{fss-cluster}
   ingresses:
     {{#each ingresses}}
       - "{{this}}"
