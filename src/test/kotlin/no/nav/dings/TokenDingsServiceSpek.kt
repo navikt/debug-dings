@@ -63,12 +63,12 @@ object TokenDingsServiceSpek : Spek({
             "http://localhost:$DIFI_PORT/test$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
         ),
         tokenDings = Environment.TokenDings(
-            clientId = "cluster:namespace:app1",
+            tokenXClientId = "cluster:namespace:app1",
             gcpAudience = "cluster:namespace:app2",
-            wellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
+            tokenXWellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
             // jwksPublic = objectMapper.writeValueAsString(
             //    Keys(listOf(objectMapper.readValue(rsaKey.first.toPublicJWK().toJSONString())))),
-            jwksPrivate = toJWKSet(rsaKey.first, isPublic = false)!!.toJSONString()
+            tokenXPrivateJwk = toJWKSet(rsaKey.first, isPublic = false)!!.toJSONString()
             // privateKeyBase64 = Base64.getEncoder().encodeToString(rsaKey.second!!.encoded)
         )
     )
@@ -101,8 +101,8 @@ object TokenDingsServiceSpek : Spek({
                 header.algorithm.name shouldBeEqualTo rsaKey.first.algorithm.name
                 header.keyID shouldBeEqualTo rsaKey.first.keyID
                 body.audience[0] shouldBeEqualTo environment.tokenDings.metadata.tokenEndpoint
-                body.subject shouldBeEqualTo environment.tokenDings.clientId
-                body.issuer shouldBeEqualTo environment.tokenDings.clientId
+                body.subject shouldBeEqualTo environment.tokenDings.tokenXClientId
+                body.issuer shouldBeEqualTo environment.tokenDings.tokenXClientId
                 body.expirationTime.after(Date()) shouldBeEqualTo true
             }
         }

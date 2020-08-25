@@ -85,18 +85,18 @@ data class Environment(
     }
 
     data class TokenDings(
-        val wellKnownUrl: String = config.getOrElse(
-            Key("tokendings.wellknown", stringType),
+        val tokenXWellKnownUrl: String = config.getOrElse(
+            Key("token.x.well.known.url", stringType),
             "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"
         ),
-        val clientId: String = config.getOrElse(Key("nais.client.id", stringType), "cluster:namespace:app1"),
+        val tokenXClientId: String = config.getOrElse(Key("token.x.client.id", stringType), "cluster:namespace:app1"),
+        val tokenXPrivateJwk: String = config.getOrElse(Key("token.x.private.jwk", stringType),  generateRsaKey().toJSONObject().toJSONString()),
         val gcpAudience: String = config.getOrElse(Key("client.gcp.audience", stringType), "dev-gcp:plattformsikkerhet:api-dings"),
-        val onpremAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:api-dings"),
-        val jwksPrivate: String = "/var/run/secrets/nais.io/jwker/jwks".readFile() ?: JWKSet(generateRsaKey()).toJSONObject(false).toJSONString()
+        val onpremAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:api-dings")
     ) {
         val metadata: OauthServerConfigurationMetadata =
             runBlocking {
-                defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
+                defaultHttpClient.getOAuthServerConfigurationMetadata(tokenXWellKnownUrl)
             }
     }
 
@@ -105,13 +105,6 @@ data class Environment(
         val onpremApiUrl: String = config.getOrElse(Key("downstream.onprem.api.url", stringType), "https://api-dings.dev-fss-pub.nais.io/hello")
     )
 }
-
-internal fun String.readFile(): String? =
-    try {
-        File(this).readText(Charsets.UTF_8)
-    } catch (err: FileNotFoundException) {
-        null
-    }
 
 internal fun generateRsaKey(keyId: String = UUID.randomUUID().toString(), keySize: Int = 2048): RSAKey =
     KeyPairGenerator.getInstance("RSA").apply { initialize(keySize) }.generateKeyPair()
@@ -122,7 +115,3 @@ internal fun generateRsaKey(keyId: String = UUID.randomUUID().toString(), keySiz
                 .keyUse(KeyUse.SIGNATURE)
                 .build()
         }
-
-enum class Profile {
-    TEST, NON_PROD, PROD
-}

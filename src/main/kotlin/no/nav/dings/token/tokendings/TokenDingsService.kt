@@ -35,14 +35,13 @@ internal const val BEARER = "Bearer"
 class TokenDingsService(
     private val tokenDingsConfig: Environment.TokenDings
 ) {
-    private val jwkToRSA = RSAKey.parse(tokenDingsConfig.jwksPrivate)
-    //JWKSet.parse(tokenDingsConfig.jwksPrivate).keys[0].toRSAKey()
+    private val jwkToRSA = RSAKey.parse(tokenDingsConfig.tokenXPrivateJwk)
 
     @KtorExperimentalAPI
     fun clientAssertion(): String {
-        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(tokenDingsConfig.jwksPrivate).keys.map { it.keyID }}" }
+        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(tokenDingsConfig.tokenXPrivateJwk).keys.map { it.keyID }}" }
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
-        return clientAssertion(tokenDingsConfig.clientId, tokenDingsConfig.metadata.tokenEndpoint, jwkToRSA)
+        return clientAssertion(tokenDingsConfig.tokenXClientId, tokenDingsConfig.metadata.tokenEndpoint, jwkToRSA)
     }
 }
 

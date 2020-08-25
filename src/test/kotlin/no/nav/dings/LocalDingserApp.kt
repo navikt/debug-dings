@@ -14,7 +14,7 @@ fun main() {
                 wellKnownUrl = "http://localhost:1111/mock1/.well-known/openid-configuration"
             ),
             Environment.TokenDings(
-                wellKnownUrl = "http://localhost:8080/.well-known/oauth-authorization-server"
+                tokenXWellKnownUrl = "http://localhost:8080/.well-known/oauth-authorization-server"
             )
         ),
         ApplicationStatus()
