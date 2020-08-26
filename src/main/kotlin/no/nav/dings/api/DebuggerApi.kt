@@ -30,7 +30,7 @@ import java.net.URI
 private val log = KotlinLogging.logger { }
 
 internal fun Routing.debuggerApi(environment: Environment) {
-    val config = environment.tokenDings
+    val config = environment.tokenX
     val tokenDingsService = TokenDingsService(config)
     val apiService = DowntreamApiService(config)
     authenticate("cookie") {

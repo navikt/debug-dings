@@ -9,7 +9,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.KeyUse
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.auth.OAuthServerSettings
@@ -18,8 +17,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dings.token.OauthServerConfigurationMetadata
 import no.nav.dings.token.utils.defaultHttpClient
 import no.nav.dings.token.utils.getOAuthServerConfigurationMetadata
-import java.io.File
-import java.io.FileNotFoundException
 import java.net.URL
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
@@ -35,7 +32,7 @@ data class Environment(
     val application: Application = Application(),
     val login: Login = Login(),
     val idporten: Idporten = Idporten(),
-    val tokenDings: TokenDings = TokenDings(),
+    val tokenX: TokenX = TokenX(),
     val downstreamApi: DownstreamApi = DownstreamApi()
 ) {
 
@@ -84,19 +81,19 @@ data class Environment(
         )
     }
 
-    data class TokenDings(
-        val tokenXWellKnownUrl: String = config.getOrElse(
+    data class TokenX(
+        val wellKnownUrl: String = config.getOrElse(
             Key("token.x.well.known.url", stringType),
             "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"
         ),
-        val tokenXClientId: String = config.getOrElse(Key("token.x.client.id", stringType), "cluster:namespace:app1"),
-        val tokenXPrivateJwk: String = config.getOrElse(Key("token.x.private.jwk", stringType),  generateRsaKey().toJSONObject().toJSONString()),
+        val clientId: String = config.getOrElse(Key("token.x.client.id", stringType), "cluster:namespace:app1"),
+        val privateJwk: String = config.getOrElse(Key("token.x.private.jwk", stringType), generateRsaKey().toJSONObject().toJSONString()),
         val gcpAudience: String = config.getOrElse(Key("client.gcp.audience", stringType), "dev-gcp:plattformsikkerhet:api-dings"),
         val onpremAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:api-dings")
     ) {
         val metadata: OauthServerConfigurationMetadata =
             runBlocking {
-                defaultHttpClient.getOAuthServerConfigurationMetadata(tokenXWellKnownUrl)
+                defaultHttpClient.getOAuthServerConfigurationMetadata(wellKnownUrl)
             }
     }
 

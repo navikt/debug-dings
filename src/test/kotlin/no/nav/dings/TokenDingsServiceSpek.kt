@@ -62,13 +62,13 @@ object TokenDingsServiceSpek : Spek({
         idporten = Environment.Idporten(
             "http://localhost:$DIFI_PORT/test$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
         ),
-        tokenDings = Environment.TokenDings(
-            tokenXClientId = "cluster:namespace:app1",
+        tokenX = Environment.TokenX(
+            clientId = "cluster:namespace:app1",
             gcpAudience = "cluster:namespace:app2",
-            tokenXWellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
+            wellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
             // jwksPublic = objectMapper.writeValueAsString(
             //    Keys(listOf(objectMapper.readValue(rsaKey.first.toPublicJWK().toJSONString())))),
-            tokenXPrivateJwk = toJWKSet(rsaKey.first, isPublic = false)!!.toJSONString()
+            privateJwk = toJWKSet(rsaKey.first, isPublic = false)!!.toJSONString()
             // privateKeyBase64 = Base64.getEncoder().encodeToString(rsaKey.second!!.encoded)
         )
     )
@@ -83,7 +83,7 @@ object TokenDingsServiceSpek : Spek({
         tokenType = BEARER
     )
 
-    val tokenDingsService = TokenDingsService(environment.tokenDings)
+    val tokenDingsService = TokenDingsService(environment.tokenX)
 
     describe("DIFI SERVICE, GET WellKnown Configuration and acquire Token") {
         context("Setup Stub to request Token from DIFI") {
@@ -100,9 +100,9 @@ object TokenDingsServiceSpek : Spek({
 
                 header.algorithm.name shouldBeEqualTo rsaKey.first.algorithm.name
                 header.keyID shouldBeEqualTo rsaKey.first.keyID
-                body.audience[0] shouldBeEqualTo environment.tokenDings.metadata.tokenEndpoint
-                body.subject shouldBeEqualTo environment.tokenDings.tokenXClientId
-                body.issuer shouldBeEqualTo environment.tokenDings.tokenXClientId
+                body.audience[0] shouldBeEqualTo environment.tokenX.metadata.tokenEndpoint
+                body.subject shouldBeEqualTo environment.tokenX.clientId
+                body.issuer shouldBeEqualTo environment.tokenX.clientId
                 body.expirationTime.after(Date()) shouldBeEqualTo true
             }
         }

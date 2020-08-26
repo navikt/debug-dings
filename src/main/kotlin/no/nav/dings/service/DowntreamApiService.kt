@@ -3,7 +3,7 @@ package no.nav.dings.service
 import no.nav.dings.config.Environment
 
 class DowntreamApiService(
-    private val config: Environment.TokenDings
+    private val config: Environment.TokenX
 ) {
 
     var isOnPrem: Boolean = false
