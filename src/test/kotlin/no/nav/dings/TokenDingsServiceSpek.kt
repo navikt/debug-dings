@@ -17,7 +17,6 @@ import no.nav.dings.mokk.OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN
 import no.nav.dings.mokk.OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS
 import no.nav.dings.mokk.configurationServerMokk
 import no.nav.dings.mokk.generateRsaKey
-import no.nav.dings.mokk.toJWKSet
 import no.nav.dings.mokk.tokenDingsStub
 import no.nav.dings.mokk.wellknownStub
 import no.nav.dings.token.tokendings.BEARER
@@ -35,106 +34,110 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 @KtorExperimentalAPI
-object TokenDingsServiceSpek : Spek({
+object TokenDingsServiceSpek : Spek(
+    {
 
-    val server = WireMockServer(
-        WireMockConfiguration.options().dynamicPort().notifier(Slf4jNotifier(true))
-    ).also { it.start() }
+        val server = WireMockServer(
+            WireMockConfiguration.options().dynamicPort().notifier(Slf4jNotifier(true))
+        ).also { it.start() }
 
-    // Mock Wellknown
-    val configurationServerMokk = configurationServerMokk(server.port())
-    server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS, configurationServerMokk)
+// Mock Wellknown
+        val configurationServerMokk = configurationServerMokk(server.port())
+        server.wellknownStub(OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS, configurationServerMokk)
 
-    // Difi Server
-    val DIFI_PORT = 8000
-    val APP_PORT = 8888
-    MockOAuth2Server(OAuth2Config(interactiveLogin = false)).start(DIFI_PORT)
+// Difi Server
+        val DIFI_PORT = 8000
+        val APP_PORT = 8888
+        MockOAuth2Server(OAuth2Config(interactiveLogin = false)).start(DIFI_PORT)
 
-    val rsaKey = generateRsaKey()
+        val rsaKey = generateRsaKey()
 
-    // Setup environment for testing
-    val environment = Environment(
-        application = Environment.Application(
-            profile = "TEST",
-            port = APP_PORT,
-            redirectUrl = "http://localhost:$APP_PORT/oauth"
-        ),
-        idporten = Environment.Idporten(
-            "http://localhost:$DIFI_PORT/test$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
-        ),
-        tokenX = Environment.TokenX(
-            clientId = "cluster:namespace:app1",
-            gcpAudience = "cluster:namespace:app2",
-            wellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
-            // jwksPublic = objectMapper.writeValueAsString(
-            //    Keys(listOf(objectMapper.readValue(rsaKey.first.toPublicJWK().toJSONString())))),
-            privateJwk = toJWKSet(rsaKey.first, isPublic = false)!!.toJSONString()
-            // privateKeyBase64 = Base64.getEncoder().encodeToString(rsaKey.second!!.encoded)
+// Setup environment for testing
+        val environment = Environment(
+            application = Environment.Application(
+                profile = "TEST",
+                port = APP_PORT,
+                redirectUrl = "http://localhost:$APP_PORT/oauth"
+            ),
+            idporten = Environment.Idporten(
+                "http://localhost:$DIFI_PORT/test$OAUTH_SERVER_WELL_KNOWN_PATH_IDPORTEN"
+            ),
+            tokenX = Environment.TokenX(
+                clientId = "cluster:namespace:app1",
+                gcpAudience = "cluster:namespace:app2",
+                wellKnownUrl = "http://localhost:${server.port()}$OAUTH_SERVER_WELL_KNOWN_PATH_TOKENDINGS",
+                privateJwk = rsaKey.toString()
+            )
         )
-    )
 
-    // Mock TOKEN
-    val accessTokenString = encodeBase64("client".toByteArray())
-    val expiresIn = 200
-    val accessTokenResponse = AccessTokenResponse(
-        accessToken = accessTokenString,
-        issuedTokenType = "urn:ietf:params:oauth:token-type:access_token",
-        expiresIn = expiresIn,
-        tokenType = BEARER
-    )
-
-    val tokenDingsService = TokenDingsService(environment.tokenX)
-
-    describe("DIFI SERVICE, GET WellKnown Configuration and acquire Token") {
-        context("Setup Stub to request Token from DIFI") {
-            server.tokenDingsStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
-            val jws = tokenDingsService.clientAssertion()
-
-            it("Validate Created token") {
-
-                parseAndValidateSignatur(rsaKey = rsaKey.first, token = jws)
-
-                val parsedToken = SignedJWT.parse(jws)
-                val body = parsedToken.jwtClaimsSet
-                val header = parsedToken.header
-
-                header.algorithm.name shouldBeEqualTo rsaKey.first.algorithm.name
-                header.keyID shouldBeEqualTo rsaKey.first.keyID
-                body.audience[0] shouldBeEqualTo environment.tokenX.metadata.tokenEndpoint
-                body.subject shouldBeEqualTo environment.tokenX.clientId
-                body.issuer shouldBeEqualTo environment.tokenX.clientId
-                body.expirationTime.after(Date()) shouldBeEqualTo true
-            }
-        }
-    }
-    withTestApplication(moduleFunction = {
-        setupHttpServer(
-            environment = environment,
-            applicationStatus = ApplicationStatus()
+// Mock TOKEN
+        val accessTokenString = encodeBase64("client".toByteArray())
+        val expiresIn = 200
+        val accessTokenResponse = AccessTokenResponse(
+            accessToken = accessTokenString,
+            issuedTokenType = "urn:ietf:params:oauth:token-type:access_token",
+            expiresIn = expiresIn,
+            tokenType = BEARER
         )
-    }) {
-        describe("Check redirect from idp provider") {
-            with(handleRequest(
-                HttpMethod.Get, "/oauth"
-            ) {
-            }) {
-                context("Get right url") {
-                    assertEquals(302, response.status()?.value)
-                    assertEquals(null, response.content)
-                    assertEquals(
-                        "http://localhost:8000/test/authorize" +
-                            "?client_id=client_id&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth&scope=openid" +
-                            "&state=****&response_type=code&response_mode=query",
-                        Regex("state=(\\w+)").replace(response.headers["Location"].toString(), "state=****")
-                    )
+
+        val tokenDingsService = TokenDingsService(environment.tokenX)
+
+        describe("DIFI SERVICE, GET WellKnown Configuration and acquire Token") {
+            context("Setup Stub to request Token from DIFI") {
+                server.tokenDingsStub(HttpStatusCode.OK, objectMapper.writeValueAsString(accessTokenResponse))
+                val jws = tokenDingsService.clientAssertion()
+
+                it("Validate Created token") {
+
+                    parseAndValidateSignatur(rsaKey = rsaKey.first, token = jws)
+
+                    val parsedToken = SignedJWT.parse(jws)
+                    val body = parsedToken.jwtClaimsSet
+                    val header = parsedToken.header
+
+                    header.algorithm.name shouldBeEqualTo rsaKey.first.algorithm.name
+                    header.keyID shouldBeEqualTo rsaKey.first.keyID
+                    body.audience[0] shouldBeEqualTo environment.tokenX.metadata.tokenEndpoint
+                    body.subject shouldBeEqualTo environment.tokenX.clientId
+                    body.issuer shouldBeEqualTo environment.tokenX.clientId
+                    body.expirationTime.after(Date()) shouldBeEqualTo true
                 }
             }
         }
+        withTestApplication(
+            moduleFunction = {
+                setupHttpServer(
+                    environment = environment,
+                    applicationStatus = ApplicationStatus()
+                )
+            }
+        ) {
+            describe("Check redirect from idp provider") {
+                with(
+                    handleRequest(
+                        HttpMethod.Get,
+                        "/oauth"
+                    ) {
+                    }
+                ) {
+                    context("Get right url") {
+                        assertEquals(302, response.status()?.value)
+                        assertEquals(null, response.content)
+                        assertEquals(
+                            "http://localhost:8000/test/authorize" +
+                                "?client_id=client_id&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth&scope=openid" +
+                                "&state=****&response_type=code&response_mode=query",
+                            Regex("state=(\\w+)").replace(response.headers["Location"].toString(), "state=****")
+                        )
+                    }
+                }
+            }
+        }
+        afterGroup {
+            server.stop()
+        }
     }
-    afterGroup {
-        server.stop()
-    }
-})
+)
 
 internal fun parseAndValidateSignatur(rsaKey: RSAKey, token: String) {
     val signedJwt = try {

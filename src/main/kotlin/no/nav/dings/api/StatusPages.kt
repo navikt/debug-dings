@@ -13,18 +13,24 @@ fun StatusPages.Configuration.exceptionHandler() {
     }
     exception<InternalError> { cause ->
         val status = HttpStatusCode.InternalServerError
-        call.respond(status,
+        call.respond(
+            status,
             HttpErrorResponse(
-                code = status, url = "", cause = cause.toString(),
+                code = status,
+                url = "",
+                cause = cause.toString(),
                 message = "The request was either invalid or lacked required parameters"
             )
         )
     }
     exception<AuthenticationException> { cause ->
         val status = HttpStatusCode.Unauthorized
-        call.respond(status,
+        call.respond(
+            status,
             HttpErrorResponse(
-                code = status, url = "", cause = cause.toString(),
+                code = status,
+                url = "",
+                cause = cause.toString(),
                 message = "The request was either invalid or lacked required parameters"
             )
         )

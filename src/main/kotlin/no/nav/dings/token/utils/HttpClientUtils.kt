@@ -45,7 +45,7 @@ internal suspend fun <T> withLog(callName: String, url: String, block: suspend (
     } catch (e: Exception) {
         log.warn { "Something went wrong with request to url: $url " }
         if (e is ClientRequestException) {
-            val responseMessage = e.response.readText()
+            val responseMessage = e.response?.readText()
             log.error { "Error Response: $responseMessage" }
         }
         throw e

@@ -29,14 +29,16 @@ fun startServer() {
         val dingsServer = createHttpServer(environment, applicationStatus)
 
         DefaultExports.initialize()
-        Runtime.getRuntime().addShutdownHook(Thread {
+        Runtime.getRuntime().addShutdownHook(
             Thread {
-                log.info { "Shutdown hook called, shutting down gracefully" }
-                applicationStatus.initialized = false
-                applicationStatus.running = false
-                dingsServer.stop(1, 5)
+                Thread {
+                    log.info { "Shutdown hook called, shutting down gracefully" }
+                    applicationStatus.initialized = false
+                    applicationStatus.running = false
+                    dingsServer.stop(1, 5)
+                }
             }
-        })
+        )
         dingsServer.start(wait = true)
     }
 }

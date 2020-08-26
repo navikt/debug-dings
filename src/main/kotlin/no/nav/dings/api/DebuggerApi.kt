@@ -135,8 +135,8 @@ internal fun Routing.debuggerApi(environment: Environment) {
 suspend fun Exception.formatException(): String {
     log.error("caught exception: $message", this)
     return if (this is ClientRequestException) {
-        "${response.status}\n\n" +
-            "${response.readText()}"
+        "${response?.status}\n\n" +
+            "${response?.readText()}"
     } else {
         "$message"
     }

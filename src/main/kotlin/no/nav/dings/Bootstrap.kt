@@ -37,12 +37,16 @@ private val log = KotlinLogging.logger { }
 
 @KtorExperimentalAPI
 fun createHttpServer(environment: Environment, applicationStatus: ApplicationStatus): NettyApplicationEngine {
-    return embeddedServer(Netty, port = environment.application.port, module = {
-        setupHttpServer(
-            environment = environment,
-            applicationStatus = applicationStatus
-        )
-    })
+    return embeddedServer(
+        Netty,
+        port = environment.application.port,
+        module = {
+            setupHttpServer(
+                environment = environment,
+                applicationStatus = applicationStatus
+            )
+        }
+    )
 }
 
 @KtorExperimentalAPI

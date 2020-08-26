@@ -27,17 +27,19 @@ private val log = KotlinLogging.logger { }
 
 val authCache: Cache<String, OAuthAccessTokenResponse.OAuth2> =
     Caffeine.newBuilder()
-        .expireAfter(object : Expiry<String, OAuthAccessTokenResponse.OAuth2> {
-            override fun expireAfterCreate(key: String, response: OAuthAccessTokenResponse.OAuth2, currentTime: Long): Long {
-                return TimeUnit.SECONDS.toNanos(response.expiresIn)
+        .expireAfter(
+            object : Expiry<String, OAuthAccessTokenResponse.OAuth2> {
+                override fun expireAfterCreate(key: String, response: OAuthAccessTokenResponse.OAuth2, currentTime: Long): Long {
+                    return TimeUnit.SECONDS.toNanos(response.expiresIn)
+                }
+
+                override fun expireAfterUpdate(key: String, value: OAuthAccessTokenResponse.OAuth2, currentTime: Long, currentDuration: Long): Long =
+                    currentDuration
+
+                override fun expireAfterRead(key: String, value: OAuthAccessTokenResponse.OAuth2, currentTime: Long, currentDuration: Long): Long =
+                    currentDuration
             }
-
-            override fun expireAfterUpdate(key: String, value: OAuthAccessTokenResponse.OAuth2, currentTime: Long, currentDuration: Long): Long =
-                currentDuration
-
-            override fun expireAfterRead(key: String, value: OAuthAccessTokenResponse.OAuth2, currentTime: Long, currentDuration: Long): Long =
-                currentDuration
-        })
+        )
         .maximumSize(10000)
         .build()
 

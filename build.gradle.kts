@@ -1,6 +1,6 @@
 // Common
-val kotlinVersion = "1.3.72"
-val ktorVersion = "1.3.2"
+val kotlinVersion = "1.4.0"
+val ktorVersion = "1.4.0"
 val kotlinxVersion = "1.3.6"
 val jacksonVersion = "2.11.2"
 val konfigVersion = "1.6.10.0"
@@ -24,9 +24,9 @@ val mockOauth = "0.1.34"
 val mainClassName = "no.nav.dings.DebugKt"
 
 plugins {
-    kotlin("jvm") version "1.3.72"
+    kotlin("jvm") version "1.4.0"
     java
-    id("org.jmailen.kotlinter") version "2.3.2"
+    id("org.jmailen.kotlinter") version "3.0.0"
     id("com.github.ben-manes.versions") version "0.29.0"
     id("com.github.johnrengelman.shadow") version "6.0.0"
 }

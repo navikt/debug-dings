@@ -4,7 +4,6 @@ import com.nimbusds.jose.JOSEObjectType
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.RSASSASigner
-import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
@@ -35,13 +34,13 @@ internal const val BEARER = "Bearer"
 class TokenDingsService(
     private val tokenXConfig: Environment.TokenX
 ) {
-    private val jwkToRSA = RSAKey.parse(tokenXConfig.privateJwk)
+    private val rsaKey = RSAKey.parse(tokenXConfig.privateJwk)
 
     @KtorExperimentalAPI
     fun clientAssertion(): String {
-        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(tokenXConfig.privateJwk).keys.map { it.keyID }}" }
+        log.info { "Getting Keys with keyID: ${rsaKey.keyID}" }
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
-        return clientAssertion(tokenXConfig.clientId, tokenXConfig.metadata.tokenEndpoint, jwkToRSA)
+        return clientAssertion(tokenXConfig.clientId, tokenXConfig.metadata.tokenEndpoint, rsaKey)
     }
 }
 

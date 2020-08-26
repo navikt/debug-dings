@@ -4,14 +4,12 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import com.nimbusds.jose.JWSAlgorithm
-import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.KeyUse
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.withCharset
-import net.minidev.json.JSONObject
 import java.security.KeyPairGenerator
 import java.security.PrivateKey
 import java.security.interfaces.RSAPrivateKey
@@ -43,9 +41,12 @@ fun WireMockServer.idportenStub(status: HttpStatusCode, body: String): StubMappi
 fun WireMockServer.tokenDingsStub(status: HttpStatusCode, body: String): StubMapping =
     stubFor(
         WireMock.post(WireMock.urlEqualTo(TOKEN_PATH))
-            .withRequestBody(WireMock.matching(
-                ".*(client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3A" +
-                    "jwt-bearer&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type).*"))
+            .withRequestBody(
+                WireMock.matching(
+                    ".*(client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3A" +
+                        "jwt-bearer&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type).*"
+                )
+            )
             .withHeader(
                 HttpHeaders.ContentType,
                 WireMock.equalTo(ContentType.Application.FormUrlEncoded.withCharset(Charsets.UTF_8).toString())
@@ -71,16 +72,19 @@ fun WireMockServer.wellknownStub(path: String, configurationServerMokk: Configur
 
 internal fun generateRsaKey(keyId: String = UUID.randomUUID().toString(), keySize: Int = 2048): Pair<RSAKey, PrivateKey?> {
     var privateKey: PrivateKey?
-    return Pair(KeyPairGenerator.getInstance("RSA").apply { initialize(keySize) }.generateKeyPair()
-        .let {
-            privateKey = it.private
-            RSAKey.Builder(it.public as RSAPublicKey)
-                .privateKey(it.private as RSAPrivateKey)
-                .keyID(keyId)
-                .algorithm(JWSAlgorithm.RS256)
-                .keyUse(KeyUse.SIGNATURE)
-                .build()
-        }, privateKey)
+    return Pair(
+        KeyPairGenerator.getInstance("RSA").apply { initialize(keySize) }.generateKeyPair()
+            .let {
+                privateKey = it.private
+                RSAKey.Builder(it.public as RSAPublicKey)
+                    .privateKey(it.private as RSAPrivateKey)
+                    .keyID(keyId)
+                    .algorithm(JWSAlgorithm.RS256)
+                    .keyUse(KeyUse.SIGNATURE)
+                    .build()
+            },
+        privateKey
+    )
 }
 
 // Mock Wellknown
@@ -91,5 +95,3 @@ fun configurationServerMokk(serverPort: Int) = ConfigurationServerMokk(
     token_endpoint_auth_methods_supported = listOf("private_key_jwt"),
     grant_types_supported = listOf("urn:ietf:params:oauth:grant-type:jwt-bearer")
 )
-
-internal fun toJWKSet(rsaKey: RSAKey, isPublic: Boolean): JSONObject? = JWKSet(rsaKey).toJSONObject(isPublic)
