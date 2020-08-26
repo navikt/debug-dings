@@ -33,15 +33,15 @@ internal const val CLIENT_ASSERTION_TYPE = "urn:ietf:params:oauth:client-asserti
 internal const val BEARER = "Bearer"
 
 class TokenDingsService(
-    private val tokenDingsConfig: Environment.TokenDings
+    private val tokenXConfig: Environment.TokenX
 ) {
-    private val jwkToRSA = JWKSet.parse(tokenDingsConfig.jwksPrivate).keys[0].toRSAKey()
+    private val jwkToRSA = RSAKey.parse(tokenXConfig.privateJwk)
 
     @KtorExperimentalAPI
     fun clientAssertion(): String {
-        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(tokenDingsConfig.jwksPrivate).keys.map { it.keyID }}" }
+        log.info { "Getting Keys with keyIDs: ${JWKSet.parse(tokenXConfig.privateJwk).keys.map { it.keyID }}" }
         log.info { "Getting Apps own private key and generating JWT token for integration with TokenDings" }
-        return clientAssertion(tokenDingsConfig.clientId, tokenDingsConfig.metadata.tokenEndpoint, jwkToRSA)
+        return clientAssertion(tokenXConfig.clientId, tokenXConfig.metadata.tokenEndpoint, jwkToRSA)
     }
 }
 

@@ -9,8 +9,6 @@ env:
     value: "https://debug-dings.prod-gcp.nais.io/oauth"
   - name: IDPORTEN_WELLKNOWN
     value: "https://oidc.difi.no/idporten-oidc-provider/.well-known/openid-configuration"
-  - name: TOKENDINGS_WELLKNOWN
-    value: "https://tokendings.prod-gcp.nais.io/.well-known/oauth-authorization-server"
   - name: CLIENT_GCP_AUDIENCE
     value: prod-gcp:plattformsikkerhet:api-dings
   - name: CLIENT_ONPREM_AUDIENCE
