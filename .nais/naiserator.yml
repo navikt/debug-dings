@@ -47,6 +47,8 @@ spec:
       cpu: 600m
       memory: 3Gi
   cpuThresholdPercentage: 80
+  tokenx:
+    enabled: true
   envFrom:
     - secret: dingser-idporten
   env:
