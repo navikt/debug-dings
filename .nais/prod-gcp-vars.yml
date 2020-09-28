@@ -1,7 +1,7 @@
 namespace: plattformsikkerhet
 team: plattformsikkerhet
 ingresses:
-  - https://debug-dings.adeo.no
+  - https://debug-dings.prod-gcp.nais.io
 env:
   - name: APPLICATION_PROFILE
     value: PROD
