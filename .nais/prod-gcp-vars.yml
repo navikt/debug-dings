@@ -6,7 +6,7 @@ env:
   - name: APPLICATION_PROFILE
     value: PROD
   - name: APPLICATION_REDIRECT_URL
-    value: "https://debug-dings.prod-gcp.nais.io/oauth"
+    value: "https://debug-dings.adeo.no/oauth"
   - name: IDPORTEN_WELLKNOWN
     value: "https://oidc.difi.no/idporten-oidc-provider/.well-known/openid-configuration"
   - name: CLIENT_GCP_AUDIENCE
