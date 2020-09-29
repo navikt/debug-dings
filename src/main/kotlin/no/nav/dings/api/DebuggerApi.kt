@@ -42,7 +42,7 @@ internal fun Routing.debuggerApi(environment: Environment) {
             get {
                 val principal = checkNotNull(call.idTokenPrincipal())
                 apiService.isOnPrem = call.request.headers.contains("onprem")
-                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject)?.accessToken ?: "error: could not get accesstoken from cache"
+                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject)?.idToken() ?: "error: could not get id_token from cache"
                 call.respond(
                     FreeMarkerContent(
                         "debugger.ftl",
