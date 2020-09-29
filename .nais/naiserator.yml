@@ -18,6 +18,8 @@ spec:
         - application: api-dings
           namespace: {{namespace}}
           cluster: {{fss-cluster}}
+        - application: digihot-proxy
+          namespace: teamdigihot
   ingresses:
     {{#each ingresses}}
       - "{{this}}"
