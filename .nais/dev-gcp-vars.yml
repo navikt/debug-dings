@@ -16,4 +16,5 @@ outbound-host:
   - api-dings.dev-gcp.nais.io
   - api-dings.dev-fss-pub.nais.io
   - digihot-proxy.dev-fss-pub.nais.io
+  - hjelpemidlerdigitalsoknad-api.dev-fss-pub.nais.io
 fss-cluster: dev-fss
