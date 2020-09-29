@@ -20,6 +20,7 @@ spec:
           cluster: {{fss-cluster}}
         - application: digihot-proxy
           namespace: teamdigihot
+          cluster: {{fss-cluster}}
   ingresses:
     {{#each ingresses}}
       - "{{this}}"
