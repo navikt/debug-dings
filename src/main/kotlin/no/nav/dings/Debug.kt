@@ -24,8 +24,9 @@ fun main() = startServer()
 @KtorExperimentalAPI
 fun startServer() {
     runBlocking {
-        val applicationStatus = AppConfiguration().applicationStatus
-        val environment = AppConfiguration().environment
+        val app = AppConfiguration()
+        val applicationStatus = app.applicationStatus
+        val environment = app.environment
         val dingsServer = createHttpServer(environment, applicationStatus)
 
         DefaultExports.initialize()
