@@ -11,6 +11,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.request.receiveParameters
 import io.ktor.response.respond
+import io.ktor.response.respondRedirect
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
@@ -34,11 +35,14 @@ internal fun Routing.debuggerApi(environment: Environment) {
     val tokenDingsService = TokenDingsService(config)
     val apiService = DowntreamApiService(config)
     authenticate("cookie") {
+        get("/") {
+            call.respondRedirect("/debugger", permanent = true)
+        }
         route("/debugger") {
             get {
                 val principal = checkNotNull(call.idTokenPrincipal())
                 apiService.isOnPrem = call.request.headers.contains("onprem")
-                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject)?.accessToken ?: "error: could not get accesstoken from cache"
+                val subjectToken: String = authCache.getIfPresent(principal.decodedJWT.subject)?.idToken() ?: "error: could not get id_token from cache"
                 call.respond(
                     FreeMarkerContent(
                         "debugger.ftl",

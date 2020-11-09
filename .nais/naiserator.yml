@@ -18,6 +18,9 @@ spec:
         - application: api-dings
           namespace: {{namespace}}
           cluster: {{fss-cluster}}
+        - application: digihot-proxy
+          namespace: teamdigihot
+          cluster: {{fss-cluster}}
   ingresses:
     {{#each ingresses}}
       - "{{this}}"
@@ -47,6 +50,8 @@ spec:
       cpu: 600m
       memory: 3Gi
   cpuThresholdPercentage: 80
+  tokenx:
+    enabled: true
   envFrom:
     - secret: dingser-idporten
   env:
