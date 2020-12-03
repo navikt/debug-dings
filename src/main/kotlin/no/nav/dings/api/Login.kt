@@ -18,12 +18,9 @@ import io.ktor.response.respondRedirect
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.util.KtorExperimentalAPI
-import mu.KotlinLogging
 import no.nav.dings.config.Environment
 import java.security.interfaces.RSAPublicKey
 import java.util.concurrent.TimeUnit
-
-private val log = KotlinLogging.logger { }
 
 val authCache: Cache<String, OAuthAccessTokenResponse.OAuth2> =
     Caffeine.newBuilder()
@@ -49,7 +46,7 @@ fun Routing.login(
 ) {
     val idporten = environment.idporten
     authenticate(idporten.oauth2ServerSettings.name) {
-        get("/oauth") {
+        get("/oauth2/callback") {
             val principal = checkNotNull(call.authentication.principal<OAuthAccessTokenResponse.OAuth2>())
             when (val decodedJWT = idporten.verify(principal)) {
                 null -> call.respond(HttpStatusCode.InternalServerError, "no id_token found in tokenresponse")
@@ -64,6 +61,7 @@ fun Routing.login(
     }
 }
 
+@KtorExperimentalAPI
 fun Environment.Idporten.verify(tokenResponse: OAuthAccessTokenResponse.OAuth2?): DecodedJWT? =
     tokenResponse?.idToken()?.let {
         jwkProvider[JWT.decode(it).keyId].idTokenVerifier(

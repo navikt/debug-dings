@@ -25,7 +25,7 @@ class IdTokenAuthenticationProvider internal constructor(config: Configuration) 
     class Configuration internal constructor(name: String?) : AuthenticationProvider.Configuration(name) {
         internal var cookieName: String = "id_token"
         internal var redirectUriCookieName: String = "redirect_uri"
-        internal var loginUrl: String = "/oauth"
+        internal var loginUrl: String = "/oauth2/callback"
         internal var verifier: ((String) -> JWTVerifier?) = { null }
         internal fun build() = IdTokenAuthenticationProvider(this)
     }

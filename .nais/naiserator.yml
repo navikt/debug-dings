@@ -52,8 +52,10 @@ spec:
   cpuThresholdPercentage: 80
   tokenx:
     enabled: true
-  envFrom:
-    - secret: dingser-idporten
+  idporten:
+    enabled: true
+ # envFrom:
+ #   - secret: dingser-idporten
   env:
   {{#each env}}
     - name: "{{this.name}}"

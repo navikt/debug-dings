@@ -20,6 +20,7 @@ val kluentVersion = "1.61"
 val wiremockVersion = "2.27.2"
 val platformRunner = "1.7.0"
 val mockOauth = "0.1.34"
+val junitJupiterVersion = "5.7.0"
 
 val mainClassName = "no.nav.dings.DebugKt"
 
@@ -46,9 +47,7 @@ tasks {
         println(project.version)
     }
     withType<Test> {
-        useJUnitPlatform {
-            includeEngines("spek")
-        }
+        useJUnitPlatform {}
         testLogging.events("passed", "skipped", "failed")
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -96,6 +95,7 @@ dependencies {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("org.junit.platform:junit-platform-runner:$platformRunner")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     testImplementation ("com.github.tomakehurst:wiremock:$wiremockVersion")
 }

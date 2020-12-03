@@ -1,4 +1,4 @@
-package no.nav.dings.token.utils
+package no.nav.dings.token
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -15,7 +15,6 @@ import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
-import no.nav.dings.token.OauthServerConfigurationMetadata
 
 private val log = KotlinLogging.logger { }
 
@@ -45,7 +44,7 @@ internal suspend fun <T> withLog(callName: String, url: String, block: suspend (
     } catch (e: Exception) {
         log.warn { "Something went wrong with request to url: $url " }
         if (e is ClientRequestException) {
-            val responseMessage = e.response?.readText()
+            val responseMessage = e.response.readText()
             log.error { "Error Response: $responseMessage" }
         }
         throw e

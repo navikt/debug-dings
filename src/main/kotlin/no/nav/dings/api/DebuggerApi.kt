@@ -16,23 +16,25 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import io.ktor.util.KtorExperimentalAPI
 import mu.KotlinLogging
 import no.nav.dings.HttpException
 import no.nav.dings.Jackson.defaultMapper
 import no.nav.dings.authentication.idTokenPrincipal
 import no.nav.dings.config.Environment
 import no.nav.dings.service.DowntreamApiService
-import no.nav.dings.token.tokendings.OAuth2TokenExchangeRequest
-import no.nav.dings.token.tokendings.TokenDingsService
-import no.nav.dings.token.tokendings.tokenExchange
-import no.nav.dings.token.utils.defaultHttpClient
+import no.nav.dings.token.Authentication
+import no.nav.dings.token.OAuth2TokenExchangeRequest
+import no.nav.dings.token.tokenExchange
+import no.nav.dings.token.defaultHttpClient
 import java.net.URI
 
 private val log = KotlinLogging.logger { }
 
+@KtorExperimentalAPI
 internal fun Routing.debuggerApi(environment: Environment) {
     val config = environment.tokenX
-    val tokenDingsService = TokenDingsService(config)
+    val tokenXAuth = Authentication(config)
     val apiService = DowntreamApiService(config)
     authenticate("cookie") {
         get("/") {
@@ -49,7 +51,7 @@ internal fun Routing.debuggerApi(environment: Environment) {
                         mapOf(
                             "tokendings_url" to config.metadata.tokenEndpoint,
                             "client_assertion_type" to "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-                            "client_assertion" to tokenDingsService.clientAssertion(),
+                            "client_assertion" to tokenXAuth.clientAssertion(config.metadata.tokenEndpoint),
                             "grant_type" to "urn:ietf:params:oauth:grant-type:token-exchange",
                             "audience" to apiService.audience(),
                             "subject_token_type" to "urn:ietf:params:oauth:token-type:jwt",
@@ -139,8 +141,7 @@ internal fun Routing.debuggerApi(environment: Environment) {
 suspend fun Exception.formatException(): String {
     log.error("caught exception: $message", this)
     return if (this is ClientRequestException) {
-        "${response?.status}\n\n" +
-            "${response?.readText()}"
+        "${response.status}\n\n" + response.readText()
     } else {
         "$message"
     }

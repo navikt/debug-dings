@@ -21,11 +21,3 @@ data class AccessTokenResponse(
     @JsonProperty(value = "token_type", required = true) val tokenType: String,
     @JsonProperty(value = "expires_in", required = true) val expiresIn: Int
 )
-
-class AccessToken(val token: String) {
-    override fun toString(): String = token
-}
-
-class ClientAssertion(val token: String) {
-    override fun toString(): String = token
-}

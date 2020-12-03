@@ -1,7 +1,9 @@
 package no.nav.dings.service
 
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.dings.config.Environment
 
+@KtorExperimentalAPI
 class DowntreamApiService(
     private val config: Environment.TokenX
 ) {
@@ -11,10 +13,10 @@ class DowntreamApiService(
     fun audience() =
         when {
             isOnPrem -> {
-                config.onpremAudience
+                config.targetONPREMAudience
             }
             else -> {
-                config.gcpAudience
+                config.targetGCPAudience
             }
         }
 }
