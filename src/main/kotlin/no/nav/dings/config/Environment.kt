@@ -42,7 +42,7 @@ data class Environment(
     data class Application(
         val profile: String = config.getOrElse(Key("application.profile", stringType), "TEST"),
         val port: Int = config.getOrElse(Key("application.port", intType), 8080),
-        val redirectUrl: String = config.getOrElse(Key("idporten.redirect.url", stringType), "http://localhost:$port/oauth2/callback")
+        val redirectUrl: String = config.getOrElse(Key("idporten.redirect.uri", stringType), "http://localhost:$port/oauth2/callback")
     )
 
     data class Login(
