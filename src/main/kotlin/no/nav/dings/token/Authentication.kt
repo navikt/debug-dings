@@ -36,6 +36,7 @@ private fun clientAssertion(clientProperties: ClientProperties, audience: String
     val now = Date.from(Instant.now())
     return JWTClaimsSet.Builder()
         .configurableClaims(clientProperties, now)
+        .subject(clientProperties.clientId)
         .issuer(clientProperties.clientId)
         .audience(audience)
         .issueTime(now)
@@ -49,7 +50,7 @@ private fun clientAssertion(clientProperties: ClientProperties, audience: String
 @KtorExperimentalAPI
 private fun JWTClaimsSet.Builder.configurableClaims(clientProperties: ClientProperties, now: Date): JWTClaimsSet.Builder {
     if (clientProperties is Environment.TokenX) {
-        return this.subject(clientProperties.clientId).notBeforeTime(now)
+        return this.notBeforeTime(now)
     }
     return this
 }
