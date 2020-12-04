@@ -7,7 +7,7 @@ env:
     value: PROD
   - name: APPLICATION_REDIRECT_URL
     value: "https://debug-dings.prod-gcp.nais.io/oauth"
-  - name: IDPORTEN_WELLKNOWN
+  - name: IDPORTEN_WELL_KNOWN_URL
     value: "https://oidc.difi.no/idporten-oidc-provider/.well-known/openid-configuration"
   - name: CLIENT_GCP_AUDIENCE
     value: prod-gcp:plattformsikkerhet:api-dings
@@ -22,7 +22,6 @@ replicas:
   max: 1
 outbound-host:
   - oidc.difi.no
-  - tokendings.prod-gcp.nais.io
   - api-dings.prod-gcp.nais.io
   - api-dings.prod-fss-pub.nais.io
 fss-cluster: prod-fss

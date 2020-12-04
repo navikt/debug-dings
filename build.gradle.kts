@@ -19,7 +19,8 @@ val spek = "2.0.13"
 val kluentVersion = "1.61"
 val wiremockVersion = "2.27.2"
 val platformRunner = "1.7.0"
-val mockOauth = "0.1.34"
+val mockOauth = "0.2.1"
+val junitJupiterVersion = "5.7.0"
 
 val mainClassName = "no.nav.dings.DebugKt"
 
@@ -46,9 +47,6 @@ tasks {
         println(project.version)
     }
     withType<Test> {
-        useJUnitPlatform {
-            includeEngines("spek")
-        }
         testLogging.events("passed", "skipped", "failed")
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -69,7 +67,6 @@ dependencies {
     implementation ("io.ktor:ktor-server-netty:$ktorVersion")
     implementation ("io.ktor:ktor-jackson:$ktorVersion")
     implementation ("io.ktor:ktor-client-core:$ktorVersion")
-    implementation ("io.ktor:ktor-client-apache:$ktorVersion")
     implementation ("io.ktor:ktor-client-jackson:$ktorVersion")
     implementation("io.ktor:ktor-freemarker:$ktorVersion")
     implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
@@ -86,16 +83,11 @@ dependencies {
     implementation ("io.github.microutils:kotlin-logging:$kotlinloggingVersion")
 
     testImplementation ("no.nav.security:mock-oauth2-server:$mockOauth")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spek") {
-        exclude(group = "org.jetbrains.kotlin")
-    }
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.platform:junit-platform-runner:$platformRunner")
     testImplementation ("com.github.tomakehurst:wiremock:$wiremockVersion")
 }

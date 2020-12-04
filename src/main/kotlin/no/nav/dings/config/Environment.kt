@@ -9,25 +9,21 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import com.nimbusds.jose.jwk.KeyUse
-import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.auth.OAuthServerSettings
 import io.ktor.http.HttpMethod
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
 import no.nav.dings.token.OauthServerConfigurationMetadata
 import no.nav.dings.token.utils.defaultHttpClient
 import no.nav.dings.token.utils.getOAuthServerConfigurationMetadata
 import java.net.URL
-import java.security.KeyPairGenerator
-import java.security.interfaces.RSAPrivateKey
-import java.security.interfaces.RSAPublicKey
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 private val config: Configuration =
     systemProperties() overriding
         EnvironmentVariables()
 
+@KtorExperimentalAPI
 data class Environment(
     val application: Application = Application(),
     val login: Login = Login(),
@@ -39,7 +35,7 @@ data class Environment(
     data class Application(
         val profile: String = config.getOrElse(Key("application.profile", stringType), "TEST"),
         val port: Int = config.getOrElse(Key("application.port", intType), 8080),
-        val redirectUrl: String = config.getOrElse(Key("application.redirect.url", stringType), "http://localhost:8080/oauth")
+        val redirectUrl: String = config.getOrElse(Key("application.redirect.url", stringType), "http://localhost:$port/oauth")
     )
 
     data class Login(
@@ -50,7 +46,7 @@ data class Environment(
 
     data class Idporten(
         val wellKnownUrl: String = config.getOrElse(
-            Key("idporten.wellknown", stringType),
+            Key("idporten.well.known.url", stringType),
             "https://oidc-ver2.difi.no/idporten-oidc-provider/.well-known/openid-configuration"
         ),
         val scope: String = config.getOrElse(Key("idporten.scope", stringType), "openid"),
@@ -82,12 +78,9 @@ data class Environment(
     }
 
     data class TokenX(
-        val wellKnownUrl: String = config.getOrElse(
-            Key("token.x.well.known.url", stringType),
-            "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"
-        ),
-        val clientId: String = config.getOrElse(Key("token.x.client.id", stringType), "cluster:namespace:app1"),
-        val privateJwk: String = config.getOrElse(Key("token.x.private.jwk", stringType), generateRsaKey().toJSONObject().toJSONString()),
+        val wellKnownUrl: String = config[Key("token.x.well.known.url", stringType)],
+        val clientId: String = config[Key("token.x.client.id", stringType)],
+        val privateJwk: String = config[Key("token.x.private.jwk", stringType)],
         val gcpAudience: String = config.getOrElse(Key("client.gcp.audience", stringType), "dev-gcp:plattformsikkerhet:api-dings"),
         val onpremAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:api-dings")
     ) {
@@ -102,13 +95,3 @@ data class Environment(
         val onpremApiUrl: String = config.getOrElse(Key("downstream.onprem.api.url", stringType), "https://api-dings.dev-fss-pub.nais.io/hello")
     )
 }
-
-internal fun generateRsaKey(keyId: String = UUID.randomUUID().toString(), keySize: Int = 2048): RSAKey =
-    KeyPairGenerator.getInstance("RSA").apply { initialize(keySize) }.generateKeyPair()
-        .let {
-            RSAKey.Builder(it.public as RSAPublicKey)
-                .privateKey(it.private as RSAPrivateKey)
-                .keyID(keyId)
-                .keyUse(KeyUse.SIGNATURE)
-                .build()
-        }
