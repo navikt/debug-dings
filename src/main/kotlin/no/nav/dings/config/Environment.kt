@@ -9,8 +9,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import com.nimbusds.jose.jwk.KeyUse
-import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.auth.OAuthServerSettings
 import io.ktor.http.HttpMethod
 import io.ktor.util.KtorExperimentalAPI
@@ -20,10 +18,6 @@ import no.nav.dings.token.OauthServerConfigurationMetadata
 import no.nav.dings.token.defaultHttpClient
 import no.nav.dings.token.getOAuthServerConfigurationMetadata
 import java.net.URL
-import java.security.KeyPairGenerator
-import java.security.interfaces.RSAPrivateKey
-import java.security.interfaces.RSAPublicKey
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 private val config: Configuration =
@@ -52,12 +46,9 @@ data class Environment(
     )
 
     data class TokenX(
-        override val wellKnownUrl: String = config.getOrElse(
-            Key("token.x.well.known.url", stringType),
-            "https://tokendings.dev-gcp.nais.io/.well-known/oauth-authorization-server"
-        ),
-        override val clientId: String = config.getOrElse(Key("token.x.client.id", stringType), "cluster:namespace:app1"),
-        override val privateJwk: String = config.getOrElse(Key("token.x.private.jwk", stringType), generateRsaKey().toJSONObject().toJSONString()),
+        override val wellKnownUrl: String = config[Key("token.x.well.known.url", stringType)],
+        override val clientId: String = config[Key("token.x.client.id", stringType)],
+        override val privateJwk: String = config[Key("token.x.private.jwk", stringType)],
         val targetGCPAudience: String = config.getOrElse(Key("client.gcp.audience", stringType), "dev-gcp:plattformsikkerhet:api-dings"),
         val targetONPREMAudience: String = config.getOrElse(Key("client.onprem.audience", stringType), "dev-fss:plattformsikkerhet:api-dings")
     ) : ClientProperties {
@@ -69,13 +60,10 @@ data class Environment(
     }
 
     data class Idporten(
-        override val wellKnownUrl: String = config.getOrElse(
-            Key("idporten.well.known.url", stringType),
-            "https://oidc-ver2.difi.no/idporten-oidc-provider/.well-known/openid-configuration"
-        ),
+        override val wellKnownUrl: String = config[Key("idporten.well.known.url", stringType)],
         val scope: String = config.getOrElse(Key("idporten.scope", stringType), "openid"),
-        override val clientId: String = config.getOrElse(Key("idporten.client.id", stringType), "client_id"),
-        override val privateJwk: String = config.getOrElse(Key("idporten.client.jwk", stringType), generateRsaKey().toJSONObject().toJSONString())
+        override val clientId: String = config[Key("idporten.client.id", stringType)],
+        override val privateJwk: String = config[Key("idporten.client.jwk", stringType)]
     ) : ClientProperties {
 
         val metadata: OauthServerConfigurationMetadata =
@@ -87,14 +75,14 @@ data class Environment(
             .rateLimited(10, 1, TimeUnit.MINUTES)
             .build()
 
-        val clientAssertionObject = Authentication(this).clientAssertion(metadata.issuer)
+        private val clientAssertion = Authentication(this).clientAssertion(metadata.issuer)
 
         val oauth2ServerSettings = OAuthServerSettings.OAuth2ServerSettings(
             name = "IdPorten",
             authorizeUrl = metadata.authorizationEndpoint,
             accessTokenUrl = metadata.tokenEndpoint,
             clientId = clientId,
-            clientSecret = clientAssertionObject,
+            clientSecret = clientAssertion,
             accessTokenRequiresBasicAuth = false,
             requestMethod = HttpMethod.Post, // must POST to token endpoint
             defaultScopes = listOf(scope),
@@ -116,13 +104,3 @@ interface ClientProperties {
     val clientId: String
     val privateJwk: String
 }
-
-internal fun generateRsaKey(keyId: String = UUID.randomUUID().toString(), keySize: Int = 2048): RSAKey =
-    KeyPairGenerator.getInstance("RSA").apply { initialize(keySize) }.generateKeyPair()
-        .let {
-            RSAKey.Builder(it.public as RSAPublicKey)
-                .privateKey(it.private as RSAPrivateKey)
-                .keyID(keyId)
-                .keyUse(KeyUse.SIGNATURE)
-                .build()
-        }

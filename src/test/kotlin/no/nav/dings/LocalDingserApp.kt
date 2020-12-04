@@ -16,10 +16,14 @@ fun main() {
             ),
             Environment.Login(),
             Environment.Idporten(
-                wellKnownUrl = mockOAuth2Server.wellKnownUrl("idporten").toString()
+                wellKnownUrl = mockOAuth2Server.wellKnownUrl("idporten").toString(),
+                privateJwk = generateRsaKey().first.toJSONObject().toJSONString(),
+                clientId = "101010"
             ),
             Environment.TokenX(
-                wellKnownUrl = mockOAuth2Server.wellKnownUrl("tokenx").toString()
+                wellKnownUrl = mockOAuth2Server.wellKnownUrl("tokenx").toString(),
+                privateJwk = generateRsaKey().first.toJSONObject().toJSONString(),
+                clientId = "909090"
             )
         ),
         ApplicationStatus()

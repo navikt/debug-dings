@@ -47,7 +47,8 @@ fun setupTestEnvironment(mockOAuth2Server: MockOAuth2Server): Environment {
             clientId = "cluster:namespace:app1",
             targetGCPAudience = "cluster:namespace:app2",
             wellKnownUrl = mockOAuth2Server.wellKnownUrl("tokenx").toString(),
-            privateJwk = rsaKey.first.toJSONObject().toJSONString()
+            privateJwk = rsaKey.first.toJSONObject().toJSONString(),
+
         )
     )
 }
