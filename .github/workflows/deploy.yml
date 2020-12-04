@@ -1,8 +1,6 @@
 name: Build, push, and deploy to GCP
 
 on: push
- #   branches:
- #     - master
 
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/debug-dings:${{ github.sha }}
