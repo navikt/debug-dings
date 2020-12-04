@@ -61,7 +61,7 @@ class TokeXTest {
                     println(response.headers.allValues())
                     assertEquals(
                         "${mockOAuth2Server.baseUrl()}idporten/authorize" +
-                            "?client_id=client_id&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth2%2Fcallback&scope=openid" +
+                            "?client_id=101010&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Foauth2%2Fcallback&scope=openid" +
                             "&state=****&response_type=code&response_mode=query",
                         Regex("state=(\\w+)").replace(response.headers["Location"].toString(), "state=****")
                     )

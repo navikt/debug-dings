@@ -41,7 +41,8 @@ fun setupTestEnvironment(mockOAuth2Server: MockOAuth2Server): Environment {
         ),
         idporten = Environment.Idporten(
             mockOAuth2Server.wellKnownUrl("idporten").toString(),
-            privateJwk = rsaKey.first.toJSONObject().toJSONString()
+            privateJwk = rsaKey.first.toJSONObject().toJSONString(),
+            clientId = "101010"
         ),
         tokenX = Environment.TokenX(
             clientId = "cluster:namespace:app1",
