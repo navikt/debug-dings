@@ -3,7 +3,7 @@ name: Build, push, and deploy to GCP
 on: push
 
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/debug-dings:${{ github.sha }}
+  IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
 jobs:
   build:
@@ -37,12 +37,15 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew shadowJar -x test
 
-      - name: Build and publish Docker image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to GitHub Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build an push the Docker image
         run: |
-          docker build --tag ${IMAGE} .
-          echo "$GITHUB_TOKEN" | docker login --username "$GITHUB_REPOSITORY" --password-stdin https://docker.pkg.github.com
+          docker build --pull --tag ${IMAGE} .
           docker push ${IMAGE}
 
   deploy-dev-gcp:
